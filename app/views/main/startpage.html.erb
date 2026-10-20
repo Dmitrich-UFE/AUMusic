@@ -2,8 +2,20 @@
   <div class="LogoText">
     <span class="brand-au">AU</span><span class="brand-music">Music</span>
   </div>
-
   
-  <!-- Кнопка входа с использованием Rails-хелпера -->
+  <!-- Форма поиска теперь в шапке -->
+  <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
+    <%= form.text_field :query, 
+                        placeholder: "Поиск музыки...", 
+                        class: "search-input" %>
+    <button type="submit" class="search-submit-btn">
+      <%= image_tag "search-icon.png", alt: "Найти", class: "search-icon" %>
+    </button>
+  <% end %>
+
   <%= link_to "Войти", "#", class: "login-button" %>
 </header>
+
+<main class="main-content">
+  <!-- Здесь будет основной контент сайта под шапкой -->
+</main>
