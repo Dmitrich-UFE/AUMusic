@@ -1,10 +1,43 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+/* Подключение шрифта (убедитесь, что файл шрифта idiqlat добавлен в проект) */
+@font-face {
+  font-family: 'Idiqlat';
+  src: url('Idiqlat-Regular.ttf') format('truetype'); /* Укажите правильный путь к вашему шрифту */
+  font-weight: 400; /* Extra Bold */
+  font-style: normal;
+}
+
+/* Фон всего сайта */
+body {
+  background-color: #2D4059;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Шапка с привязкой к левому верхнему углу */
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 20px; /* Небольшой внутренний отступ, чтобы текст не слипался с краями экрана. Если нужно строго в угол — поставьте 0 */
+}
+
+/* Стили для логотипа */
+.LogoText {
+  font-family: 'Idiqlat', sans-serif;
+  font-size: 36pt; /* 64 пункта */
+  font-weight: 400; /* Extra Bold */
+  line-height: 1;  /* Убирает лишние отступы сверху и снизу текста */
+}
+
+/* Цвет для AU */
+.brand-au {
+  color: #F07B3F;
+}
+
+/* Цвет для Music */
+.brand-music {
+  color: #FFD460;
+}
+
+
