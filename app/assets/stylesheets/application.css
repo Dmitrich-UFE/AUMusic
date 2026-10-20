@@ -1,8 +1,17 @@
-/* Подключение шрифта (убедитесь, что файл шрифта idiqlat добавлен в проект) */
+/* Подключение локального вариативного шрифта Merriweather */
+@font-face {
+  font-family: 'Merriweather';
+  src: url('Merriweather-VariableFont_opsz,wdth,wght.ttf') format('truetype-variations'),
+       url('Merriweather-VariableFont_opsz,wdth,wght.ttf') format('truetype');
+  font-weight: 100 900; /* Поддержка любого веса от тонкого до жирного */
+  font-style: normal;
+}
+
+/* Подключение шрифта Idiqlat (остается без изменений) */
 @font-face {
   font-family: 'Idiqlat';
-  src: url('Idiqlat-Regular.ttf') format('truetype'); /* Укажите правильный путь к вашему шрифту */
-  font-weight: 400; /* Extra Bold */
+  src: url('Idiqlat-Regular.ttf') format('truetype'); 
+  font-weight: 400;
   font-style: normal;
 }
 
@@ -14,30 +23,62 @@ body {
   min-height: 100vh;
 }
 
-/* Шапка с привязкой к левому верхнему углу */
+/* Контейнер шапки */
 .site-header {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Логотип с привязкой к левому верхнему углу */
+.LogoText {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 20px; /* Небольшой внутренний отступ, чтобы текст не слипался с краями экрана. Если нужно строго в угол — поставьте 0 */
-}
-
-/* Стили для логотипа */
-.LogoText {
+  padding: 20px; 
   font-family: 'Idiqlat', sans-serif;
-  font-size: 36pt; /* 64 пункта */
-  font-weight: 400; /* Extra Bold */
-  line-height: 1;  /* Убирает лишние отступы сверху и снизу текста */
+  font-size: 36pt; 
+  font-weight: 400; 
+  line-height: 1;  
 }
 
-/* Цвет для AU */
 .brand-au {
   color: #F07B3F;
 }
 
-/* Цвет для Music */
 .brand-music {
   color: #FFD460;
 }
 
+/* Кнопка входа с привязкой к правому верхнему углу */
+.login-button {
+  position: absolute;
+  top: 20px;     /* Выравнивание по верхнему краю вровень с логотипом */
+  right: 20px;   /* Привязка к правому углу */
+  
+  /* Внешний вид кнопки */
+  background-color: #EA5455;
+  color: #FFFFFF;
+  border-radius: 30px; /* Прямоугольная со скруглениями радиуса 30 */
+  padding: 14px 36px;  /* Внутренние отступы (высота и ширина) */
+  
+  /* Стили текста и использование вариативного шрифта */
+  font-family: 'Merriweather', serif;
+  font-weight: 600;    /* Задаем жирный текст прямо из вариативного шрифта */
+  text-decoration: none; 
+  font-size: 20px;
+  
+  /* Центрирование текста внутри кнопки */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  /* Плавная анимация при наведении */
+  transition: background-color 0.2s ease;
+}
 
+/* Эффект при наведении */
+.login-button:hover {
+  background-color: #e33e40;
+}
