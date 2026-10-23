@@ -1,0 +1,133 @@
+/* Повторно объявляем локальные шрифты, чтобы они работали в этом файле */
+@font-face {
+  font-family: 'Merriweather';
+  src: url('Merriweather-VariableFont_opsz,wdth,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Idiqlat';
+  src: url('Idiqlat-Regular.ttf') format('truetype'); 
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  background-color: #2D4059;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Merriweather', serif;
+}
+
+/* Шапка страницы входа */
+.sign-header {
+  padding: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Логотип (копия стилей с главной страницы, убрано подчеркивание ссылки) */
+.LogoText {
+  font-family: 'Idiqlat', sans-serif;
+  font-size: 36pt; 
+  font-weight: 400; 
+  line-height: 1;  
+  text-decoration: none;
+}
+.brand-au { color: #F07B3F; }
+.brand-music { color: #FFD460; }
+
+/* Основной контейнер формы */
+.sign-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 100px 20px 40px 20px; /* Отступ сверху, чтобы не перекрывать абсолютный логотип */
+}
+
+/* Надпись "Вход": 40pt, Bold, Цвет F07B3F */
+.sign-title {
+  font-family: 'Merriweather', serif;
+  font-size: 40pt;
+  font-weight: 700; /* Bold */
+  color: #F07B3F;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+/* Форма flex-контейнер для выравнивания полей по центру */
+.sign-form {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px; /* Расстояние между полями ввода */
+}
+
+.form-group {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Поля ввода: 70% ширины, max 700px, 70px высота, скругление 30, фон белый */
+.form-input {
+  width: 70%;
+  max-width: 700px;
+  height: 70px;
+  border-radius: 30px;
+  background-color: #FFFFFF;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  padding: 0 30px; /* Внутренний горизонтальный отступ */
+  
+  /* Введённый текст: Regular, 26pt, цвет 203040 */
+  font-family: 'Merriweather', serif;
+  font-size: 26pt;
+  font-weight: 400;
+  color: #203040;
+}
+
+/* Текст до ввода (Placeholder): Regular Italic, 26pt, цвет 2D4059 */
+.form-input::placeholder {
+  font-family: 'Merriweather', serif;
+  font-size: 26pt;
+  font-weight: 400;
+  font-style: italic;
+  color: #2D4059;
+  opacity: 1;
+}
+
+/* Кнопка регистрации: размеры как у полей, фон EA5455, текст как у ввода (26pt) */
+.sign-submit-btn {
+  width: 70%;
+  max-width: 700px;
+  height: 70px;
+  border-radius: 30px;
+  background-color: #EA5455;
+  border: none;
+  cursor: pointer;
+  
+  /* Текст кнопки: цвет и шрифт такие же, как у введенного текста */
+  color: #FFFFFF;
+  font-family: 'Merriweather', serif;
+  font-size: 26pt;
+  font-weight: 400;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.sign-submit-btn:hover {
+  background-color: #e33e40;
+}
