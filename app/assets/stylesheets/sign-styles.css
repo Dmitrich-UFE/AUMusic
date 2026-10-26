@@ -131,3 +131,15 @@ body {
 .sign-submit-btn:hover {
   background-color: #e33e40;
 }
+
+/* Отменяем влияние автоматической обертки Rails на верстку */
+.field_with_errors {
+  display: contents; /* Заставляет браузер игнорировать этот div при расчете flex-разметки */
+}
+
+/* Опционально: можно подсветить неверно заполненные поля красной границей */
+.field_with_errors .form-input {
+  border: 2px solid #EA5455;
+  box-sizing: border-box;
+}
+

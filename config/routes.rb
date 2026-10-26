@@ -13,4 +13,5 @@ Rails.application.routes.draw do
   # root "posts#index"
   root "main#startpage"
   get "/signin", to: "sessions#new", as: "signin"
+  post "/signin", to: "sessions#create" # Маршрут для обработки отправки формы
 end

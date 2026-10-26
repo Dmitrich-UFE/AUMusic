@@ -7,9 +7,22 @@
 </header>
 
 <main class="sign-container">
-  <h1 class="sign-title">Вход</h1>
+  <h1 class="sign-title">Регистрация</h1>
 
-  <%= form_with url: "#", method: :post, class: "sign-form" do |form| %>
+  <!-- Привязываем форму к объекту @user и меняем URL на создание -->
+  <%= form_with model: @user, url: signin_path, method: :post, class: "sign-form" do |form| %>
+    
+      <!-- Блок вывода ошибок (Исправленный) -->
+  <% if @user.errors.any? %>
+    <div class="error-messages" style="color: #EA5455; font-family: 'Merriweather', serif; font-size: 16px; margin-bottom: 20px; text-align: center;">
+      <% @user.errors.objects.each do |error| %>
+        <div><%= error.message %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+
+
     <div class="form-group">
       <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
     </div>
