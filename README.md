@@ -1,24 +1,11 @@
-# README
+# AUMusic
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Это сайт с музыкальными релизами.
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Что будет:
+* Главное окно
+* Ролевая модель: владелец, лейбл, пользователь
+* Поиск
+* Взаимодействия с треками
+* Загрузка музыки на платформу лейблами
+* плеер 
