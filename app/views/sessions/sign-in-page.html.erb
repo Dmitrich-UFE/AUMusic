@@ -7,34 +7,71 @@
 </header>
 
 <main class="sign-container">
-  <h1 class="sign-title">Регистрация</h1>
-
-  <!-- Привязываем форму к объекту @user и меняем URL на создание -->
-  <%= form_with model: @user, url: signin_path, method: :post, class: "sign-form" do |form| %>
+  <div class="sign-content-wrapper">
     
-      <!-- Блок вывода ошибок (Исправленный) -->
-  <% if @user.errors.any? %>
-    <div class="error-messages" style="color: #EA5455; font-family: 'Merriweather', serif; font-size: 16px; margin-bottom: 20px; text-align: center;">
-      <% @user.errors.objects.each do |error| %>
-        <div><%= error.message %></div>
-      <% end %>
-    </div>
-  <% end %>
-
-
-
-    <div class="form-group">
-      <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
+    <!-- Переключатель режимов -->
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" onclick="switchAuthMode('login')">Вход</button>
+      <button type="button" class="auth-tab" onclick="switchAuthMode('register')">Регистрация</button>
     </div>
 
-    <div class="form-group">
-      <%= form.password_field :password, placeholder: "Пароль", class: "form-input" %>
-    </div>
+    <!-- Общие блоки ошибок -->
+    <% if flash[:alert] %>
+      <div class="error-messages"><div><%= flash[:alert] %></div></div>
+    <% end %>
+    <% if @user.errors.any? %>
+      <div class="error-messages">
+        <% @user.errors.objects.each do |error| %>
+          <div><%= error.message %></div>
+        <% end %>
+      </div>
+    <% end %>
 
-    <div class="form-group">
-      <%= form.password_field :password_confirmation, placeholder: "Подтверждение пароля", class: "form-input" %>
-    </div>
+    <!-- ФОРМА 1: АВТОРИЗАЦИЯ (ВХОД) -->
+    <%= form_with url: login_path, method: :post, id: "login-form", class: "sign-form" do |form| %>
+      <div class="form-group">
+        <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
+      </div>
+      <div class="form-group">
+        <%= form.password_field :password, placeholder: "Пароль", class: "form-input" %>
+      </div>
+      <%= form.submit "Войти", class: "sign-submit-btn" %>
+    <% end %>
 
-    <%= form.submit "Зарегистрироваться", class: "sign-submit-btn" %>
-  <% end %>
+    <!-- ФОРМА 2: РЕГИСТРАЦИЯ (Скрыта по умолчанию) -->
+    <%= form_with model: @user, url: signin_path, method: :post, id: "register-form", class: "sign-form d-none" do |form| %>
+      <div class="form-group">
+        <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
+      </div>
+      <div class="form-group">
+        <%= form.password_field :password, placeholder: "Пароль", class: "form-input" %>
+      </div>
+      <div class="form-group">
+        <%= form.password_field :password_confirmation, placeholder: "Подтверждение пароля", class: "form-input" %>
+      </div>
+      <%= form.submit "Зарегистрироваться", class: "sign-submit-btn" %>
+    <% end %>
+
+  </div>
 </main>
+
+<!-- Простой скрипт переключения форм -->
+<script>
+  function switchAuthMode(mode) {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabs = document.querySelectorAll('.auth-tab');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    if (mode === 'login') {
+      loginForm.classList.remove('d-none');
+      registerForm.classList.add('d-none');
+      tabs[0].classList.add('active');
+    } else {
+      loginForm.classList.add('d-none');
+      registerForm.classList.remove('d-none');
+      tabs[1].classList.add('active');
+    }
+  }
+</script>

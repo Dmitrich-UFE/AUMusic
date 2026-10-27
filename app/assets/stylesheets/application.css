@@ -127,3 +127,76 @@ body {
     display: none;
   }
 }
+
+/* Контейнер для отображения действующей сессии */
+.user-session-block {
+  display: inline-flex;
+  align-items: center;
+  background-color: #203040; /* Темный фон для никнейма */
+  border-radius: 30px;
+  overflow: hidden;
+  height: 54px; /* Подберите под высоту вашей кнопки входа */
+  flex-shrink: 0;
+}
+
+/* Текст замаскированного никнейма */
+.session-username {
+  color: #FFFFFF;
+  font-family: 'Merriweather', serif;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 0 20px;
+  background-color: #203040;
+}
+
+/* Красная кнопка Выйти внутри капсулы */
+.logout-button {
+  background-color: #EA5455;
+  color: #FFFFFF;
+  border-radius: 30px; /* Скругление перекрывает правый край капсулы */
+  padding: 0 30px;
+  height: 100%;
+  font-family: 'Merriweather', serif;
+  font-weight: 700;
+  text-decoration: none; 
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #e33e40;
+}
+
+/* 1. Заставляем форму button_to вести себя как правильный флекс-элемент шапки */
+.user-session-block form {
+  display: flex;
+  height: 100%;
+}
+
+/* 2. Сбрасываем стандартные браузерные стили кнопки формы и возвращаем её размеры */
+.user-session-block button.logout-button {
+  background-color: #EA5455;
+  color: #FFFFFF;
+  border: none;           /* Убираем рамку кнопки формы */
+  cursor: pointer;        /* Возвращаем курсор-указатель */
+  border-radius: 30px;    /* Скругление края */
+  padding: 0 30px;        /* Горизонтальные отступы для текста */
+  height: 100%;           /* Растягиваем на всю высоту капсулы */
+  font-family: 'Merriweather', serif;
+  font-weight: 700;
+  font-size: 20px;
+  white-space: nowrap;    /* Запрещаем тексту переноситься или сжиматься */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.user-session-block button.logout-button:hover {
+  background-color: #e33e40;
+}
+

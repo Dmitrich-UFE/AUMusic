@@ -3,19 +3,21 @@
     <span class="brand-au">AU</span><span class="brand-music">Music</span>
   </div>
   
-  <!-- Форма поиска теперь в шапке -->
   <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
-    <%= form.text_field :query, 
-                        placeholder: "Поиск музыки...", 
-                        class: "search-input" %>
+    <%= form.text_field :query, placeholder: "искать...", class: "search-input" %>
     <button type="submit" class="search-submit-btn">
       <%= image_tag "search-icon.png", alt: "Найти", class: "search-icon" %>
     </button>
   <% end %>
 
-  <%= link_to "Войти", signin_path, class: "login-button" %>
+  <% if logged_in? %>
+    <!-- Капсула сессии -->
+    <div class="user-session-block">
+      <span class="session-username"><%= mask_username(current_user.username) %></span>
+      <!-- Передаем класс самой форме, генерируемой Rails -->
+      <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+    </div>
+  <% else %>
+    <%= link_to "Войти", signin_path, class: "login-button" %>
+  <% end %>
 </header>
-
-<main class="main-content">
-  <!-- Здесь будет основной контент сайта под шапкой -->
-</main>
