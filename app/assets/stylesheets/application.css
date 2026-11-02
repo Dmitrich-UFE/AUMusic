@@ -200,3 +200,39 @@ body {
   background-color: #e33e40;
 }
 
+/* Общий контейнер для элементов справа, чтобы они выстраивались в ряд */
+.header-right-block {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Отступ между кнопкой "+" и основной капсулой */
+  flex-shrink: 0;
+}
+
+/* Круглая кнопка создания музыки "+" */
+.create-music-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;  /* Точная высота и ширина для идеального круга */
+  height: 54px;
+  background-color: #EA5455; /* Цвет фона как у поиска и сессии */
+  color: #FFFFFF;
+  border-radius: 50%; /* Делает кнопку круглой */
+  text-decoration: none;
+  font-family: 'Merriweather', serif;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Эффект легкого подсвечивания при наведении */
+.create-music-btn:hover {
+  background-color: #2a3e54;
+}
+
+/* Эффект при клике */
+.create-music-btn:active {
+  transform: scale(0.95);
+}
+

@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  release_date: 2026-10-27
+  artist: one
+
+two:
+  title: MyString
+  release_date: 2026-10-27
+  artist: two

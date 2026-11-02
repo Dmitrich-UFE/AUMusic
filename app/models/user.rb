@@ -16,4 +16,35 @@ class User < ApplicationRecord
                        length: { minimum: 6, message: "Пароль должен быть не менее 6 символов" },
                        confirmation: { message: "Пароли не совпадают" },
                        on: :create # Проверять только при регистрации нового аккаунта
+
+  # Перечисление ролей (Enum)
+  enum :role, { user: "user", musician: "musician", owner: "owner" }, default: "user"
+
+  # Автоматически делаем первого пользователя Владельцем платформы
+  before_create :make_first_user_owner
+
+  # Связи для обычных пользователей
+  has_many :playlists, dependent: :destroy
+  has_many :likes, dependent: :destroy
+  has_many :comments, dependent: :destroy
+
+  # Связь для музыканта (у музыканта может быть профиль его группы/артиста)
+  has_one :artist, dependent: :destroy
+
+  # Проверка прав доступа (хелперы)
+  def can_upload_music?
+    musician? || owner?
+  end
+
+  def can_assign_roles?
+    owner?
+  end
+
+  private
+
+  def make_first_user_owner
+    if User.count.zero?
+      self.role = :owner
+    end
+  end                     
 end

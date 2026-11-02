@@ -1,8 +1,10 @@
 <header class="site-header">
+  <!-- 1. Логотип -->
   <div class="LogoText">
     <span class="brand-au">AU</span><span class="brand-music">Music</span>
   </div>
   
+  <!-- 2. Форма поиска музыки -->
   <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
     <%= form.text_field :query, placeholder: "искать...", class: "search-input" %>
     <button type="submit" class="search-submit-btn">
@@ -10,14 +12,28 @@
     </button>
   <% end %>
 
+  <!-- 3. Правый блок (Авторизация / Сессия) -->
   <% if logged_in? %>
-    <!-- Капсула сессии -->
-    <div class="user-session-block">
-      <span class="session-username"><%= mask_username(current_user.username) %></span>
-      <!-- Передаем класс самой форме, генерируемой Rails -->
-      <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+    <div class="header-right-block">
+      
+      <!-- Кнопка "+" видна только Владельцу и Музыканту -->
+      <% if current_user.can_upload_music? %>
+        <%= link_to "+", "#", class: "create-music-btn", title: "Загрузить музыку" %>
+      <% end %>
+
+      <!-- Капсула сессии пользователя -->
+      <div class="user-session-block">
+        <span class="session-username"><%= mask_username(current_user.username) %></span>
+        <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+      </div>
+      
     </div>
   <% else %>
+    <!-- Если пользователь гость -->
     <%= link_to "Войти", signin_path, class: "login-button" %>
   <% end %>
 </header>
+
+<main class="main-content">
+  <!-- Здесь будет контент вашей главной страницы (треки, плеер) -->
+</main>
