@@ -184,8 +184,11 @@ body {
 .upload-form {
   display: flex;
   width: 100%;
-  max-width: 1100px;
-  gap: 60px;
+  max-width: 1200px;
+  gap: 20px; /* Уменьшено в 3 раза для плотного и аккуратного отображения */
+  margin: 0 auto;      /* Центрируем саму форму на экране */
+  gap: 25px;           /* Жестко фиксируем расстояние между левой и правой колонками */
+  justify-content: center;
 }
 
 .form-column {

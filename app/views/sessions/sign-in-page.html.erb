@@ -15,7 +15,7 @@
       <button type="button" class="auth-tab" onclick="switchAuthMode('register')">Регистрация</button>
     </div>
 
-    <!-- Общие блоки ошибок -->
+    <!-- Общие блоки ошибок сервера (оставляем для подстраховки) -->
     <% if flash[:alert] %>
       <div class="error-messages"><div><%= flash[:alert] %></div></div>
     <% end %>
@@ -29,27 +29,48 @@
 
     <!-- ФОРМА 1: АВТОРИЗАЦИЯ (ВХОД) -->
     <%= form_with url: login_path, method: :post, id: "login-form", class: "sign-form" do |form| %>
-      <div class="form-group">
-        <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
+      <div class="form-group-wrapper">
+        <div class="form-group">
+          <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input", id: "login-username-input" %>
+        </div>
+        <div class="live-error" id="login-username-error"></div>
       </div>
-      <div class="form-group">
-        <%= form.password_field :password, placeholder: "Пароль", class: "form-input" %>
+
+      <div class="form-group-wrapper">
+        <div class="form-group">
+          <%= form.password_field :password, placeholder: "Пароль", class: "form-input", id: "login-password-input" %>
+        </div>
+        <div class="live-error" id="login-password-error"></div>
       </div>
+
       <%= form.submit "Войти", class: "sign-submit-btn" %>
     <% end %>
 
     <!-- ФОРМА 2: РЕГИСТРАЦИЯ (Скрыта по умолчанию) -->
     <%= form_with model: @user, url: signin_path, method: :post, id: "register-form", class: "sign-form d-none" do |form| %>
-      <div class="form-group">
-        <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input" %>
+      
+      <div class="form-group-wrapper">
+        <div class="form-group">
+          <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input", id: "reg-username-input" %>
+        </div>
+        <div class="live-error" id="reg-username-error"></div>
       </div>
-      <div class="form-group">
-        <%= form.password_field :password, placeholder: "Пароль", class: "form-input" %>
+
+      <div class="form-group-wrapper">
+        <div class="form-group">
+          <%= form.password_field :password, placeholder: "Пароль", class: "form-input", id: "reg-password-input" %>
+        </div>
+        <div class="live-error" id="reg-password-error"></div>
       </div>
-      <div class="form-group">
-        <%= form.password_field :password_confirmation, placeholder: "Подтверждение пароля", class: "form-input" %>
+
+      <div class="form-group-wrapper">
+        <div class="form-group">
+          <%= form.password_field :password_confirmation, placeholder: "Подтверждение пароля", class: "form-input", id: "reg-confirmation-input" %>
+        </div>
+        <div class="live-error" id="reg-confirmation-error"></div>
       </div>
-      <%= form.submit "Зарегистрироваться", class: "sign-submit-btn" %>
+
+      <%= form.submit "Зарегистрироваться", class: "sign-submit-btn", id: "reg-submit-btn" %>
     <% end %>
 
   </div>
@@ -74,4 +95,130 @@
       tabs[1].classList.add('active');
     }
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+  // Регулярные выражения по вашему ТЗ
+  const loginRegex = /^[a-zA-Z0-9]+$/;
+  const passwordRegex = /^[a-zA-Z0-9!?&*$#@%()+=.]+$/;
+
+  // ==========================================
+  // 1. ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ (REGISTER)
+  // ==========================================
+  const regUsername = document.getElementById("reg-username-input");
+  const regPassword = document.getElementById("reg-password-input");
+  const regConfirm = document.getElementById("reg-confirmation-input");
+  
+  const regUsernameError = document.getElementById("reg-username-error");
+  const regPasswordError = document.getElementById("reg-password-error");
+  const regConfirmError = document.getElementById("reg-confirmation-error");
+  const regSubmitBtn = document.getElementById("reg-submit-btn");
+
+  function validateRegUsername() {
+    const value = regUsername.value;
+    if (value.length === 0) { regUsernameError.innerText = ""; return false; }
+    if (value.length < 4) { regUsernameError.innerText = "имя пользователя слишком короткое: допускается от 4 до 20 символов"; return false; }
+    if (value.length > 20) { regUsernameError.innerText = "имя пользователя слишком длинное: допускается от 4 до 20 символов"; return false; }
+    if (!loginRegex.test(value)) { regUsernameError.innerText = "имя пользователя имеет недопустимые символы: допускаются только латинские буквы и цифры"; return false; }
+    regUsernameError.innerText = "";
+    return true;
+  }
+
+  function validateRegPassword() {
+    const value = regPassword.value;
+    if (value.length === 0) { regPasswordError.innerText = ""; return false; }
+    if (value.length < 6) { regPasswordError.innerText = "пароль слишком короткий: допустимо от 6 до 20 символов"; return false; }
+    if (value.length > 20) { regPasswordError.innerText = "пароль слишком длинный: допустимо от 6 до 20 символов"; return false; }
+    if (!passwordRegex.test(value)) { regPasswordError.innerText = "пароль имеет недопустимые символы: допускаются только латинские буквы, цифры и знаки !?&*$#@%()+="; return false; }
+    regPasswordError.innerText = "";
+    return true;
+  }
+
+  function validateRegConfirmation() {
+    const pValue = regPassword.value;
+    const cValue = regConfirm.value;
+    if (cValue.length === 0) { regConfirmError.innerText = ""; return false; }
+    if (pValue !== cValue) { regConfirmError.innerText = "пароли не совпадают"; return false; }
+    regConfirmError.innerText = "";
+    return true;
+  }
+
+  function checkRegFormStatus() {
+    const isUserValid = validateRegUsername();
+    const isPassValid = validateRegPassword();
+    const isConfValid = validateRegConfirmation();
+
+    if (regSubmitBtn) {
+      if (isUserValid && isPassValid && isConfValid) {
+        regSubmitBtn.disabled = false;
+        regSubmitBtn.classList.add("active"); // Если есть класс подсветки
+        regSubmitBtn.style.opacity = "1";
+        regSubmitBtn.style.cursor = "pointer";
+      } else {
+        regSubmitBtn.disabled = true;
+        regSubmitBtn.classList.remove("active");
+        regSubmitBtn.style.opacity = "0.6";
+        regSubmitBtn.style.cursor = "not-allowed";
+      }
+    }
+  }
+
+  if (regUsername && regPassword && regConfirm) {
+    regUsername.addEventListener("input", checkRegFormStatus);
+    regPassword.addEventListener("input", () => { validateRegPassword(); validateRegConfirmation(); checkRegFormStatus(); });
+    regConfirm.addEventListener("input", checkRegFormStatus);
+  }
+
+  // ==========================================
+  // 2. ВАЛИДАЦИЯ ФОРМЫ ВХОДА (LOGIN)
+  // ==========================================
+  const loginUsername = document.getElementById("login-username-input");
+  const loginPassword = document.getElementById("login-password-input");
+  
+  const loginUsernameError = document.getElementById("login-username-error");
+  const loginPasswordError = document.getElementById("login-password-error");
+  const loginSubmitBtn = document.querySelector("#login-form .sign-submit-btn");
+
+  function validateLoginUsername() {
+    const value = loginUsername.value;
+    if (value.length === 0) { loginUsernameError.innerText = ""; return false; }
+    if (value.length < 4) { loginUsernameError.innerText = "имя пользователя слишком короткое: допускается от 4 до 20 символов"; return false; }
+    if (value.length > 20) { loginUsernameError.innerText = "имя пользователя слишком длинное: допускается от 4 до 20 символов"; return false; }
+    if (!loginRegex.test(value)) { loginUsernameError.innerText = "имя пользователя имеет недопустимые символы: допускаются только латинские буквы и цифры"; return false; }
+    loginUsernameError.innerText = "";
+    return true;
+  }
+
+  function validateLoginPassword() {
+    const value = loginPassword.value;
+    if (value.length === 0) { loginPasswordError.innerText = ""; return false; }
+    if (value.length < 6) { loginPasswordError.innerText = "пароль слишком короткий: допустимо от 6 до 20 символов"; return false; }
+    if (value.length > 20) { loginPasswordError.innerText = "пароль слишком длинный: допустимо от 6 до 20 символов"; return false; }
+    if (!passwordRegex.test(value)) { loginPasswordError.innerText = "пароль имеет недопустимые символы: допускаются только латинские буквы, цифры и знаки !?&*$#@%()+="; return false; }
+    loginPasswordError.innerText = "";
+    return true;
+  }
+
+  function checkLoginFormStatus() {
+    const isUserValid = validateLoginUsername();
+    const isPassValid = validateLoginPassword();
+
+    if (loginSubmitBtn) {
+      if (isUserValid && isPassValid) {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.style.opacity = "1";
+        loginSubmitBtn.style.cursor = "pointer";
+      } else {
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.style.opacity = "0.6";
+        loginSubmitBtn.style.cursor = "not-allowed";
+      }
+    }
+  }
+
+  if (loginUsername && loginPassword) {
+    loginUsername.addEventListener("input", checkLoginFormStatus);
+    loginPassword.addEventListener("input", checkLoginFormStatus);
+  }
+});
+
 </script>
