@@ -22,6 +22,7 @@ class User < ApplicationRecord
 
   # Автоматически делаем первого пользователя Владельцем платформы
   before_create :make_first_user_owner
+  before_validation :downcase_login_fields
 
   # Связи для обычных пользователей
   has_many :playlists, dependent: :destroy
@@ -41,6 +42,11 @@ class User < ApplicationRecord
   end
 
   private
+
+  def downcase_login_fields
+    self.username = username.strip.downcase if username.present?
+    self.email = email.strip.downcase if email.present?
+  end
 
   def make_first_user_owner
     if User.count.zero?

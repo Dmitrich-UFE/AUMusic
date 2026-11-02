@@ -1,0 +1,202 @@
+<%= stylesheet_link_tag "create-music-styles", media: "all" %>
+
+<header class="site-header">
+  <%= link_to root_path, class: "LogoText" do %>
+    <span class="brand-au">AU</span><span class="brand-music">Music</span>
+  <% end %>
+  <div class="header-right-block">
+    <div class="user-session-block">
+      <span class="session-username"><%= mask_username(current_user.username) %></span>
+      <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+    </div>
+  </div>
+</header>
+
+<main class="upload-container">
+  <%= form_with url: "#", method: :post, class: "upload-form", id: "music-form" do |form| %>
+  
+  <!-- Левая колонка: медиа -->
+  <div class="form-column media-upload">
+    <div class="drop-zone" id="cover-drop-zone">
+      <span class="drop-zone-text">Фото<br>сюда</span>
+      <%= form.file_field :cover, id: "cover-file-input", accept: ".jpg,.jpeg,.png,.webp", style: "display:none;" %>
+    </div>
+    <p class="upload-hint" id="cover-hint">Загрузите фото обложки в формате .png или .jpg размером до 5 Mb</p>
+
+    <div class="drop-zone audio-zone" id="audio-drop-zone">
+      <span class="drop-zone-text">Перетащите<br>музыку сюда</span>
+      <%= form.file_field :audio, id: "audio-file-input", accept: ".mp3,.flac,.ogg", style: "display:none;" %>
+    </div>
+  </div>
+
+  <!-- Правая колонка: текст, авторы и КНОПКА -->
+  <div class="form-column meta-info">
+    <div class="input-group">
+      <%= form.text_field :title, placeholder: "Название композиции до 50 символов...", class: "text-input", maxlength: 50 %>
+    </div>
+    
+    <div class="input-group">
+      <%= form.text_area :description, placeholder: "Описание до 150 символов...", class: "text-input textarea-input", maxlength: 150 %>
+    </div>
+
+    <div class="authors-section">
+      <h3 class="section-title">Авторы</h3>
+      <div class="authors-list" id="authors-container">
+        <div class="author-item primary-author" data-username="<%= current_user.username %>">
+          <%= current_user.username %> (Вы)
+        </div>
+      </div>
+      <button type="button" class="btn btn-add-author" id="add-author-btn">Добавить автора</button>
+    </div>
+
+    <!-- КНОПКА СНОВА ТУТ: на широком экране она встанет ровно под "Добавить автора" -->
+    <%= form.submit "Опубликовать композицию", class: "btn btn-submit", id: "submit-track-btn", disabled: true %>
+  </div>
+
+<% end %>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const submitBtn = document.getElementById("submit-track-btn");
+  const descriptionInput = document.querySelector(".textarea-input");
+  
+  let hasDescription = false;
+  let hasCover = false;
+  let hasAudio = false;
+
+  function checkFormValidity() {
+    hasDescription = descriptionInput.value.trim().length > 0;
+
+    if (hasDescription && hasCover && hasAudio) {
+      submitBtn.disabled = false;
+      submitBtn.classList.add("active");
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.remove("active");
+    }
+  }
+
+  descriptionInput.addEventListener("input", checkFormValidity);
+
+  // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ АУДИО ---
+  function validateAndSetAudio(filesList) {
+    const file = filesList[0]; // Читаем первый файл из массива
+    if (!file) return;
+
+    const allowedExtensions = /(\.mp3|\.flac|\.ogg)$/i;
+    if (!allowedExtensions.exec(file.name)) {
+      alert("Неверный формат аудио. Принимаются только .mp3, .flac, .ogg");
+      hasAudio = false;
+      checkFormValidity();
+      return;
+    }
+    
+    let fileName = file.name;
+    if (fileName.length > 24) {
+      fileName = fileName.substring(0, 10) + "..." + fileName.substring(fileName.length - 12);
+    }
+    document.getElementById("audio-drop-zone").querySelector(".drop-zone-text").innerHTML = fileName;
+    
+    hasAudio = true;
+    checkFormValidity();
+  }
+
+  // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ОБЛОЖКИ ---
+  function validateAndSetCover(filesList) {
+    const file = filesList[0]; // Читаем первый файл из массива
+    if (!file) return;
+
+    const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.webp)$/i;
+    const maxSize = 5 * 1024 * 1024;
+    const coverHint = document.getElementById("cover-hint");
+    const coverDropZone = document.getElementById("cover-drop-zone");
+    const coverText = coverDropZone.querySelector(".drop-zone-text");
+
+    coverHint.classList.remove("error");
+    coverHint.innerText = "Загрузите фото обложки в формате .png или .jpg размером до 5 Mb";
+
+    if (!allowedExtensions.exec(file.name)) {
+      const ext = file.name.substring(file.name.lastIndexOf("."));
+      coverHint.classList.add("error");
+      coverHint.innerText = `Неверный формат: ${ext}. Принимаются: .jpg, .jpeg, .png, .webp.`;
+      hasCover = false;
+      checkFormValidity();
+      return;
+    }
+
+    if (file.size > maxSize) {
+      coverHint.classList.add("error");
+      coverHint.innerText = "Превышен размер файла. Сожмите его и попробуйте снова.";
+      hasCover = false;
+      checkFormValidity();
+      return;
+    }
+
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = function() {
+      if (this.width !== this.height) {
+        coverHint.classList.add("error");
+        coverHint.innerText = "Для обложки следует использовать изображения формата 1:1";
+        hasCover = false;
+        checkFormValidity();
+        return;
+      }
+
+      coverDropZone.style.backgroundImage = `url('${img.src}')`;
+      coverText.style.display = "none";
+      
+      hasCover = true;
+      checkFormValidity();
+    };
+  }
+
+  // --- ПРИВЯЗКА СОБЫТИЙ С ПЕРЕДАЧЕЙ ПРАВИЛЬНОГО МАССИВА ФАЙЛОВ ---
+  const audioDropZone = document.getElementById("audio-drop-zone");
+  const audioInput = document.getElementById("audio-file-input");
+  const coverDropZone = document.getElementById("cover-drop-zone");
+  const coverInput = document.getElementById("cover-file-input");
+
+  // Клик по зонам
+  audioDropZone.addEventListener("click", () => audioInput.click());
+  coverDropZone.addEventListener("click", () => coverInput.click());
+
+  // Выбор через проводник
+  audioInput.addEventListener("change", () => validateAndSetAudio(audioInput.files));
+  coverInput.addEventListener("change", () => validateAndSetCover(coverInput.files));
+
+  // Drag & Drop события
+  [audioDropZone, coverDropZone].forEach(zone => {
+    zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("drag-over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  });
+
+  audioDropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    audioDropZone.classList.remove("drag-over");
+    validateAndSetAudio(e.dataTransfer.files);
+  });
+
+  coverDropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    coverDropZone.classList.remove("drag-over");
+    validateAndSetCover(e.dataTransfer.files);
+  });
+
+  // Логика добавления соавторов
+  const addAuthorBtn = document.getElementById("add-author-btn");
+  const authorsContainer = document.getElementById("authors-container");
+
+  addAuthorBtn.addEventListener("click", () => {
+    const externalAuthor = prompt("Введите никнейм соавтора:");
+    if (externalAuthor && externalAuthor.trim() !== "") {
+      const newAuthorDiv = document.createElement("div");
+      newAuthorDiv.className = "author-item";
+      newAuthorDiv.innerText = externalAuthor.trim();
+      authorsContainer.appendChild(newAuthorDiv);
+    }
+  });
+});
+</script>

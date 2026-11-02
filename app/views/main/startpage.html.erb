@@ -1,8 +1,9 @@
 <header class="site-header">
   <!-- 1. Логотип -->
-  <div class="LogoText">
+  <!-- Логотип обернут в ссылку на главную страницу -->
+  <%= link_to root_path, class: "LogoText" do %>
     <span class="brand-au">AU</span><span class="brand-music">Music</span>
-  </div>
+  <% end %>
   
   <!-- 2. Форма поиска музыки -->
   <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
@@ -18,7 +19,7 @@
       
       <!-- Кнопка "+" видна только Владельцу и Музыканту -->
       <% if current_user.can_upload_music? %>
-        <%= link_to "+", "#", class: "create-music-btn", title: "Загрузить музыку" %>
+        <%= link_to "+",  new_track_path, class: "create-music-btn", title: "Загрузить музыку" %>
       <% end %>
 
       <!-- Капсула сессии пользователя -->

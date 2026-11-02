@@ -6,7 +6,7 @@ class SessionsController < ApplicationController
 
   # Экшен для регистрации (уже существующий)
   def create
-    login_value = params[:user][:login]
+    login_value = params[:user][:login].to_s.strip.downcase
     
     @user = User.new(
       username: login_value,
@@ -23,17 +23,18 @@ class SessionsController < ApplicationController
     end
   end
 
-  # НОВЫЙ экшен для авторизации (входа)
+  # Авторизация (Вход)
   def login
-    # Ищем пользователя по username или по email
-    user = User.find_by(username: params[:login]) || User.find_by(email: params[:login])
+    # ВАЖНО: Принудительно переводим введенный логин в нижний регистр
+    login_value = params[:login].to_s.strip.downcase
 
-    # Проверяем, существует ли пользователь и подходит ли пароль
+    # Ищем пользователя в PostgreSQL (теперь поиск гарантированно совпадет)
+    user = User.find_by(username: login_value) || User.find_by(email: login_value)
+
     if user && user.authenticate(params[:password])
-      session[:user_id] = user.id # Сохраняем сессию
+      session[:user_id] = user.id
       redirect_to root_path, notice: "Вы успешно вошли!"
     else
-      # Если данные неверны, создаем пустой объект для формы и выводим ошибку
       @user = User.new
       flash.now[:alert] = "Неверный никнейм/email или пароль"
       render "sign-in-page", status: :unprocessable_entity

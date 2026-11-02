@@ -16,4 +16,5 @@ Rails.application.routes.draw do
   post "/signin", to: "sessions#create" # Маршрут для обработки отправки формы
   post "/login", to: "sessions#login", as: "login" # для входа (авторизации)
   delete "/logout", to: "sessions#destroy", as: "logout" # Новый маршрут
+  resources :tracks, only: [:new, :create]
 end

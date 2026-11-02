@@ -36,8 +36,11 @@ body {
   font-size: 36pt; 
   font-weight: 400; 
   line-height: 1;  
-  flex-shrink: 0; /* Не дает логотипу сжиматься */
+  flex-shrink: 0;
+  text-decoration: none; /* Убирает подчеркивание ссылки */
+  display: inline-block; /* Гарантирует правильное позиционирование ссылки */
 }
+
 
 .brand-au { color: #F07B3F; }
 .brand-music { color: #FFD460; }
