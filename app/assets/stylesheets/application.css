@@ -20,14 +20,19 @@ body {
   font-family: 'Merriweather', serif;
 }
 
-/* Шапка становится флекс-контейнером для выравнивания всех элементов */
 .site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
   display: flex;
-  align-items: center; /* Центрирует логотип, поиск и кнопку строго по вертикали */
-  justify-content: space-between; /* Распределяет элементы по ширине */
+  align-items: center;
+  justify-content: space-between;
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
+  background-color: #2D4059; /* Цвет фона, чтобы контент не просвечивал при скролле */
+  z-index: 100;
+  height: 100px;
 }
 
 /* Убираем абсолютное позиционирование у логотипа */
@@ -239,3 +244,108 @@ body {
   transform: scale(0.95);
 }
 
+/* Смещаем основной контент вниз на высоту шапки */
+.main-content {
+  margin-top: 100px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+/* Сетка треков: до 5 элементов в строке */
+.tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Элемент карточки трека */
+.track-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Контейнер обложки (пропорция 1:1) */
+.track-cover-wrapper {
+  width: 100%;
+  position: relative;
+  padding-top: 100%; /* Делает блок квадратным */
+  margin-bottom: 15px;
+}
+
+/* Обложка трека: радиус скругления 20px */
+.track-card-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.empty-cover {
+  background-color: #203040;
+  border-radius: 20px;
+}
+
+/* Текстовая информация */
+.track-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Название трека: 24 пункта, максимум 2 строки, лишнее заменяется на "..." */
+.track-card-title {
+  font-family: 'Merriweather', serif;
+  font-size: 24pt;
+  font-weight: 700;
+  color: #FFD460; /* Желтоватый цвет как на макете */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Авторы: 20 пунктов, максимум 2 строки, лишнее заменяется на "..." */
+.track-card-artists {
+  font-family: 'Merriweather', serif;
+  font-size: 20pt;
+  font-weight: 400;
+  color: #F07B3F; /* Оранжевый цвет авторов */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Индикатор загрузки */
+.scroll-loader {
+  text-align: center;
+  color: #FFFFFF;
+  padding: 20px;
+  font-family: 'Merriweather', serif;
+  font-size: 18px;
+}
+.d-none { display: none !important; }
+
+/* АДАПТИВНОСТЬ: уменьшаем количество треков в строке до 2-х на узких экранах */
+@media (max-width: 1024px) {
+  .tracks-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .track-card-title { font-size: 20pt; }
+  .track-card-artists { font-size: 16pt; }
+}
+
+@media (max-width: 640px) {
+  .tracks-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+  .track-card-title { font-size: 16pt; }
+  .track-card-artists { font-size: 14pt; }
+}

@@ -36,5 +36,58 @@
 </header>
 
 <main class="main-content">
-  <!-- Здесь будет контент вашей главной страницы (треки, плеер) -->
+  <div class="tracks-grid" id="tracks-infinite-container" data-page="1">
+    <%= render "track_cards", tracks: @tracks %>
+  </div>
+  
+  <!-- Индикатор загрузки -->
+  <div class="scroll-loader d-none" id="infinite-loader">Загрузка треков...</div>
 </main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("tracks-infinite-container");
+  const loader = document.getElementById("infinite-loader");
+  
+  let isLoading = false;
+  let hasMoreTracks = true;
+
+  window.addEventListener("scroll", () => {
+    if (isLoading || !hasMoreTracks) return;
+
+    // Проверяем, доскроллил ли пользователь до низа страницы (с запасом в 200px)
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
+      loadMoreTracks();
+    }
+  });
+
+  function loadMoreTracks() {
+    isLoading = true;
+    loader.classList.remove("d-none");
+
+    const currentPage = parseInt(container.getAttribute("data-page"));
+    const nextPage = currentPage + 1;
+
+    // Формируем AJAX-запрос к контроллеру Rails
+    fetch(`/?page=${nextPage}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(response => response.text())
+    .then(html => {
+      if (html.trim().length === 0) {
+        hasMoreTracks = false; // Если сервер прислал пустой ответ, треков больше нет
+      } else {
+        container.insertAdjacentHTML("beforeend", html);
+        container.setAttribute("data-page", nextPage); // Обновляем номер страницы
+      }
+    })
+    .catch(error => console.error("Ошибка загрузки треков:", error))
+    .finally(() => {
+      isLoading = false;
+      loader.classList.add("d-none");
+    });
+  }
+});
+</script>

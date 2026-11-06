@@ -14,7 +14,7 @@
 
 <main class="upload-container">
   
-  <%= form_with url: "#", method: :post, class: "upload-form", id: "music-form" do |form| %>
+  <%= form_with model: @track, url: tracks_path, method: :post, class: "upload-form", id: "music-form" do |form| %>
   
     <!-- Левая колонка: медиа -->
     <div class="form-column media-upload">

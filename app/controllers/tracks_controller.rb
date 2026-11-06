@@ -1,28 +1,45 @@
 class TracksController < ApplicationController
-  # Проверяем авторизацию перед открытием формы создания
   before_action :require_login
-  # Проверяем, имеет ли пользователь право загружать музыку (Музыкант или Владелец)
   before_action :require_musician_or_owner
 
   def new
     @track = Track.new
-    # Рендерит ваш файл app/views/tracks/new.html.erb
   end
+
 
   def create
-    # Здесь позже будет логика сохранения в PostgreSQL
-  end
+    @track = Track.new(track_params)
+  
+    # Временно задаем базовую длительность, так как в форме этого поля нет
+    @track.duration = 180 if @track.respond_to?(:duration)
 
-  private
+    # Находим артиста текущего пользователя, чтобы сделать его главным автором
+    artist = current_user.artist || current_user.create_artist!(name: current_user.username)
 
-  # Проверка: вошел ли пользователь вообще
-  def require_login
-    unless logged_in?
-      redirect_to root_path, alert: "Для доступа к этой странице необходимо войти в аккаунт."
+    if @track.save
+      # Привязываем главного автора к треку
+      @track.artists << artist
+      redirect_to root_path, notice: "Композиция «#{@track.title}» успешно опубликована!"
+    else
+      flash.now[:alert] = "Не удалось опубликовать композицию."
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # Проверка: есть ли у пользователя роль Музыканта или Владельца
+
+  private
+
+  # Разрешаем принимать текстовые поля И файлы из формы
+  def track_params
+    params.require(:track).permit(:title, :description, :cover, :audio)
+  end
+
+  def require_login
+    unless logged_in?
+      redirect_to root_path, alert: "Необходимо войти в аккаунт."
+    end
+  end
+
   def require_musician_or_owner
     unless current_user.can_upload_music?
       redirect_to root_path, alert: "У вас нет прав для загрузки музыки."

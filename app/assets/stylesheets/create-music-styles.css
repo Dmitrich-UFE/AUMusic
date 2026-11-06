@@ -34,7 +34,14 @@ body {
   justify-content: center;
   align-items: flex-start;
   flex-grow: 1;
-  padding: 40px 20px;
+  
+  /* ИСПРАВЛЕНИЕ: Добавляем увеличенный верхний отступ, 
+     чтобы форма не заезжала под зафиксированную вверху шапку */
+  padding-top: 140px; 
+  padding-bottom: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
+  
   box-sizing: border-box;
 }
 
@@ -180,15 +187,13 @@ body {
   background-color: #e33e40;
 }
 
-/* Базовое состояние для широких экранов */
+/* На всякий случай убедитесь, что у .upload-form убраны любые деструктивные отрицательные margin-top */
 .upload-form {
   display: flex;
   width: 100%;
-  max-width: 1200px;
-  gap: 20px; /* Уменьшено в 3 раза для плотного и аккуратного отображения */
-  margin: 0 auto;      /* Центрируем саму форму на экране */
-  gap: 25px;           /* Жестко фиксируем расстояние между левой и правой колонками */
-  justify-content: center;
+  max-width: 1100px;
+  gap: 60px; /* Исходное расстояние между левой и правой колонками */
+  margin-top: 0; /* Обнуляем, чтобы избежать смещений */
 }
 
 .form-column {

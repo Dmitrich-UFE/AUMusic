@@ -1,0 +1,17 @@
+<% tracks.each do |track| %>
+  <div class="track-card">
+    <div class="track-cover-wrapper">
+      <% if track.cover.attached? %>
+        <%= image_tag track.cover, class: "track-card-cover" %>
+      <% else %>
+        <div class="track-card-cover empty-cover"></div> <!-- Заглушка, если нет обложки -->
+      <% end %>
+    </div>
+    <div class="track-card-info">
+      <div class="track-card-title" title="<%= track.title %>"><%= track.title %></div>
+      <div class="track-card-artists" title="<%= track.artists.map(&:name).join(', ') %>">
+        <%= track.artists.map(&:name).join(', ') %>
+      </div>
+    </div>
+  </div>
+<% end %>
