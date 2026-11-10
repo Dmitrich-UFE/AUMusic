@@ -17,4 +17,9 @@ Rails.application.routes.draw do
   post "/login", to: "sessions#login", as: "login" # для входа (авторизации)
   delete "/logout", to: "sessions#destroy", as: "logout" # Новый маршрут
   resources :tracks, only: [:new, :create]
+
+  # НОВЫЙ МАРШРУТ: живой поиск пользователей
+  get "/users/search", to: "sessions#search_users", as: "search_users"
+  post "/tracks/:track_id/reactions/toggle", to: "reactions#toggle", as: "toggle_track_reaction"
+
 end

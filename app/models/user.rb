@@ -28,6 +28,7 @@ class User < ApplicationRecord
   has_many :playlists, dependent: :destroy
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :reactions, dependent: :destroy
 
   # Связь для музыканта (у музыканта может быть профиль его группы/артиста)
   has_one :artist, dependent: :destroy

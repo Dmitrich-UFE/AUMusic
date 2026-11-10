@@ -1,6 +1,7 @@
+<%= javascript_include_tag "actioncable", "data-turbo-track": "reload" %>
+
 <header class="site-header">
   <!-- 1. Логотип -->
-  <!-- Логотип обернут в ссылку на главную страницу -->
   <%= link_to root_path, class: "LogoText" do %>
     <span class="brand-au">AU</span><span class="brand-music">Music</span>
   <% end %>
@@ -16,21 +17,16 @@
   <!-- 3. Правый блок (Авторизация / Сессия) -->
   <% if logged_in? %>
     <div class="header-right-block">
-      
-      <!-- Кнопка "+" видна только Владельцу и Музыканту -->
       <% if current_user.can_upload_music? %>
-        <%= link_to "+",  new_track_path, class: "create-music-btn", title: "Загрузить музыку" %>
+        <%= link_to "+", new_track_path, class: "create-music-btn", title: "Загрузить музыку" %>
       <% end %>
 
-      <!-- Капсула сессии пользователя -->
       <div class="user-session-block">
         <span class="session-username"><%= mask_username(current_user.username) %></span>
         <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
       </div>
-      
     </div>
   <% else %>
-    <!-- Если пользователь гость -->
     <%= link_to "Войти", signin_path, class: "login-button" %>
   <% end %>
 </header>
@@ -40,54 +36,427 @@
     <%= render "track_cards", tracks: @tracks %>
   </div>
   
-  <!-- Индикатор загрузки -->
   <div class="scroll-loader d-none" id="infinite-loader">Загрузка треков...</div>
 </main>
 
+<!-- Нативный аудио движок -->
+<audio id="audio-core" preload="auto"></audio>
+
+<!-- ========================================== -->
+<!-- 1. СВЕРНУТЫЙ ПЛЕЕР -->
+<!-- ========================================== -->
+<div id="au-player-minimized-container" class="d-none"  data-turbo-cache="false"
+     data-img-like="<%= asset_path('like_icon.png') %>"
+     data-img-like-confirmed="<%= asset_path('like_confirmed_icon.png') %>"
+     data-img-dislike="<%= asset_path('dislike_icon.png') %>"
+     data-img-dislike-confirmed="<%= asset_path('dislike_confirmed_icon.png') %>">
+
+  <!-- Шкала прогресса свернутого плеера -->
+  <div class="player-progress-area" id="progress-timeline">
+    <div class="player-buffered-bar" id="progress-buffered"></div>
+    <div class="player-progress-bar" id="progress-current"></div>
+    <div class="player-progress-pin" id="progress-pin"></div>
+  </div>
+
+  <div class="player-min-panel">
+    <div class="player-ctrl-group">
+      <button type="button" class="player-btn" onclick="playerPrevTrack()">
+        <%= image_tag "prev_track.png", alt: "Prev" %>
+      </button>
+      <button type="button" class="player-btn btn-main-play" id="btn-play-toggle">
+        <%= image_tag "play_icon.png", alt: "Play", id: "img-play-state" %>
+      </button>
+      <button type="button" class="player-btn" onclick="playerNextTrack()">
+        <%= image_tag "next_track.png", alt: "Next" %>
+      </button>
+      <div class="player-time-display"><span id="time-current">0:00</span> / <span id="time-duration">0:00</span></div>
+    </div>
+
+    <!-- ТЕМНАЯ ПОДЛОЖКА #203040 ДЛЯ ДАННЫХ ТРЕКА -->
+    <div class="player-center-info horizontal-capsule">
+      <img src="" alt="" class="player-min-cover" id="player-cover-img">
+      <div class="player-text-block">
+        <div class="player-track-title" id="player-title-txt">Название</div>
+        <div class="player-track-artists" id="player-artists-txt">Авторы</div>
+      </div>
+    </div>
+
+    <div class="player-right-group">
+      <button type="button" class="player-btn" id="min-like-btn" onclick="playerToggleLike()"><%= image_tag "like_icon.png" %></button>
+      <button type="button" class="player-btn" id="min-dislike-btn" onclick="playerToggleDislike()"><%= image_tag "dislike_icon.png" %></button>
+      <button type="button" class="player-btn open-panel-trigger" id="btn-maximize-player"><%= image_tag "open_panel_icon.png" %></button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 2. РАЗВЕРНУТЫЙ ПЛЕЕР -->
+<!-- ========================================== -->
+<div id="player-full-screen" class="player-max-panel d-none">
+  <!-- ВЕРХНЯЯ ШАПКА-ПОДЛОЖКА ЦВЕТА #203040 С КНОПКОЙ ЗАКРЫТИЯ -->
+  <div class="max-player-header-bg">
+    <button type="button" class="player-btn close-panel-trigger" id="btn-minimize-player">
+      <%= image_tag "close_panel_icon.png", class: "close-panel-arrow" %>
+    </button>
+  </div>
+
+  <div class="max-player-layout">
+    <div class="max-cover-box">
+      <img src="" alt="" id="max-player-cover">
+    </div>
+
+    <div class="max-info-box">
+      <h2 class="max-track-title" id="max-player-title">Название</h2>
+      <div class="max-track-artists" id="max-player-artists">Авторы</div>
+
+      <div class="max-actions-carousel">
+        <button type="button" class="carousel-item-btn like-stat" id="max-like-btn" onclick="playerToggleLike()">
+          <%= image_tag "like_icon.png" %> <span id="like-count-display">0</span>
+        </button>
+        <button type="button" class="carousel-item-btn dislike-stat" id="max-dislike-btn" onclick="playerToggleDislike()">
+          <%= image_tag "dislike_icon.png" %>
+        </button>
+        <button type="button" class="carousel-item-btn comment-star">
+          <%= image_tag "comments_icon.png" %> <span id="comment-count-display">0</span>
+        </button>
+      </div>
+
+      <div class="max-timeline-wrapper">
+        <div class="max-progress-area" id="max-progress-timeline">
+          <div class="max-buffered-bar" id="max-player-buffered"></div>
+          <div class="max-progress-bar" id="max-progress-current"></div>
+        </div>
+        <div class="max-time-labels">
+          <span id="max-time-current">0:00</span>
+          <span id="max-time-duration">0:00</span>
+        </div>
+      </div>
+
+      <div class="max-controls-row">
+        <button type="button" class="player-btn max-nav-btn" onclick="playerPrevTrack()"><%= image_tag "prev_track.png" %></button>
+        <button type="button" class="player-btn max-play-big" id="max-btn-play-toggle"><%= image_tag "play_icon.png" %></button>
+        <button type="button" class="player-btn max-nav-btn" onclick="playerNextTrack()"><%= image_tag "next_track.png" %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("tracks-infinite-container");
-  const loader = document.getElementById("infinite-loader");
-  
-  let isLoading = false;
-  let hasMoreTracks = true;
+  // 1. Инициализация глобального Action Cable соединения из ресурсов Rails
+  window.App = {}; 
+  if (typeof ActionCable !== 'undefined') {
+    App.cable = ActionCable.createConsumer();
+  }
 
-  window.addEventListener("scroll", () => {
-    if (isLoading || !hasMoreTracks) return;
+  // 2. Логика бесконечной подгрузки карточек треков
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("tracks-infinite-container");
+    const loader = document.getElementById("infinite-loader");
+    
+    let isLoading = false;
+    let hasMoreTracks = true;
 
-    // Проверяем, доскроллил ли пользователь до низа страницы (с запасом в 200px)
-    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
-      loadMoreTracks();
+    window.addEventListener("scroll", () => {
+      if (isLoading || !hasMoreTracks || !container) return;
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
+        isLoading = true;
+        if (loader) loader.classList.remove("d-none");
+        const currentPage = parseInt(container.getAttribute("data-page")) || 1;
+        const nextPage = currentPage + 1;
+
+        fetch("/?page=" + nextPage, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(response => response.text())
+        .then(html => {
+          if (!html || html.trim().length === 0) { 
+            hasMoreTracks = false; 
+          } else { 
+            container.insertAdjacentHTML("beforeend", html); 
+            container.setAttribute("data-page", nextPage); 
+          }
+        })
+        .catch(error => console.error("Ошибка загрузки треков:", error))
+        .finally(() => { 
+          isLoading = false; 
+          if (loader) loader.classList.add("d-none"); 
+        });
+      }
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("tracks-infinite-container");
+
+    if (container) {
+      container.addEventListener("click", (e) => {
+        const card = e.target.closest(".playable-track-card");
+        if (!card) return;
+        e.preventDefault();
+
+        const clickedTrackData = {
+          id: parseInt(card.getAttribute("data-id")),
+          title: card.getAttribute("data-title"),
+          artists: card.getAttribute("data-artists"),
+          audio_url: card.getAttribute("data-audio-url"),
+          cover_url: card.getAttribute("data-cover-url"),
+          likes_count: parseInt(card.getAttribute("data-likes-count")) || 0,
+          user_reaction: card.getAttribute("data-user-reaction")
+        };
+
+        if (!clickedTrackData.audio_url) { 
+          alert("У этого трека отсутствует аудиофайл."); 
+          return; 
+        }
+
+        const allCardsOnScreen = document.querySelectorAll(".playable-track-card");
+        let otherTracks = Array.from(allCardsOnScreen).map(c => {
+          return {
+            id: parseInt(c.getAttribute("data-id")),
+            title: c.getAttribute("data-title"),
+            artists: c.getAttribute("data-artists"),
+            audio_url: c.getAttribute("data-audio-url"),
+            cover_url: c.getAttribute("data-cover-url"),
+            likes_count: parseInt(c.getAttribute("data-likes-count")) || 0,
+            user_reaction: c.getAttribute("data-user-reaction")
+          };
+        }).filter(t => t.audio_url && t.id !== clickedTrackData.id);
+
+        // Фильтрация дубликатов
+        otherTracks = otherTracks.filter((track, index, self) => 
+          index === self.findIndex((t) => t.id === track.id)
+        );
+
+        // Перемешивание остальных треков
+        for (let i = otherTracks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = otherTracks[i];
+          otherTracks[i] = otherTracks[j];
+          otherTracks[j] = temp;
+        }
+
+        window.startAudioPlayback(clickedTrackData, [clickedTrackData, ...otherTracks]);
+      });
     }
   });
+</script>
 
-  function loadMoreTracks() {
-    isLoading = true;
-    loader.classList.remove("d-none");
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const audio = document.getElementById("audio-core");
+    const timeline = document.getElementById("progress-timeline");
+    const currentProgress = document.getElementById("progress-current");
+    const progressPin = document.getElementById("progress-pin");
+    
+    const maxTimeline = document.getElementById("max-progress-timeline");
+    const maxCurrentProgress = document.getElementById("max-progress-current");
+    const minPlayerContainer = document.getElementById("au-player-minimized-container");
+    const maxPlayerContainer = document.getElementById("player-full-screen");
 
-    const currentPage = parseInt(container.getAttribute("data-page"));
-    const nextPage = currentPage + 1;
+    if (minPlayerContainer) {
+      minPlayerContainer.classList.add("d-none");
+    }
 
-    // Формируем AJAX-запрос к контроллеру Rails
-    fetch(`/?page=${nextPage}`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest"
+
+    let currentPlaylist = [];
+    let currentTrackIndex = 0;
+    let currentReactionSubscription = null;
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return m + ":" + (s < 10 ? '0' : '') + s;
+    }
+
+    // Безопасная подмена заглушек-луп
+    function updateReactionIcons(userReactionKind) {
+      try {
+        const playerBox = document.getElementById("au-player-minimized-container");
+        if (!playerBox) return;
+
+        const assetLike = playerBox.getAttribute("data-img-like");
+        const assetLikeConfirmed = playerBox.getAttribute("data-img-like-confirmed");
+        const assetDislike = playerBox.getAttribute("data-img-dislike");
+        const assetDislikeConfirmed = playerBox.getAttribute("data-img-dislike-confirmed");
+
+        const minLikeImg = document.querySelector("#min-like-btn img");
+        const minDislikeImg = document.querySelector("#min-dislike-btn img");
+        const maxLikeImg = document.querySelector("#max-like-btn img");
+        const maxDislikeImg = document.querySelector("#max-dislike-btn img");
+
+        if (minLikeImg && assetLike) minLikeImg.src = assetLike;
+        if (maxLikeImg && assetLike) maxLikeImg.src = assetLike;
+        if (minDislikeImg && assetDislike) minDislikeImg.src = assetDislike;
+        if (maxDislikeImg && assetDislike) maxDislikeImg.src = assetDislike;
+
+        if (userReactionKind === "like") {
+          if (minLikeImg && assetLikeConfirmed) minLikeImg.src = assetLikeConfirmed;
+          if (maxLikeImg && assetLikeConfirmed) maxLikeImg.src = assetLikeConfirmed;
+        } else if (userReactionKind === "dislike") {
+          if (minDislikeImg && assetDislikeConfirmed) minDislikeImg.src = assetDislikeConfirmed;
+          if (maxDislikeImg && assetDislikeConfirmed) maxDislikeImg.src = assetDislikeConfirmed;
+        }
+      } catch (e) { console.warn(e); }
+    }
+
+    function updatePlayStateIcons(isPlaying) {
+      try {
+        const playImg = document.getElementById("img-play-state");
+        const maxBtn = document.getElementById("max-btn-play-toggle");
+        const maxPlayBig = maxBtn ? maxBtn.querySelector("img") : null;
+        const iconName = isPlaying ? "pause_icon.png" : "play_icon.png";
+        if (playImg) playImg.src = "/assets/" + iconName;
+        if (maxPlayBig) maxPlayBig.src = "/assets/" + iconName;
+      } catch (e) { console.warn(e); }
+    }
+
+    window.startAudioPlayback = function(trackData, playlistArray = []) {
+      currentPlaylist = playlistArray.length > 0 ? playlistArray : [trackData];
+      currentTrackIndex = currentPlaylist.findIndex(t => t.id === trackData.id);
+
+      if (minPlayerContainer) {
+        minPlayerContainer.style.setProperty("display", "flex", "important");
+        minPlayerContainer.classList.remove("d-none");
       }
-    })
-    .then(response => response.text())
-    .then(html => {
-      if (html.trim().length === 0) {
-        hasMoreTracks = false; // Если сервер прислал пустой ответ, треков больше нет
-      } else {
-        container.insertAdjacentHTML("beforeend", html);
-        container.setAttribute("data-page", nextPage); // Обновляем номер страницы
+      
+      document.getElementById("player-cover-img").src = trackData.cover_url || '';
+      document.getElementById("player-title-txt").innerText = trackData.title.substring(0, 20) + (trackData.title.length > 20 ? "..." : "");
+      document.getElementById("player-artists-txt").innerText = trackData.artists.substring(0, 30);
+
+      document.getElementById("max-player-cover").src = trackData.cover_url || '';
+      document.getElementById("max-player-title").innerText = trackData.title;
+      document.getElementById("max-player-artists").innerText = trackData.artists;
+      
+      const maxLikeCount = document.getElementById("like-count-display");
+      if (maxLikeCount) maxLikeCount.innerText = trackData.likes_count;
+
+      updateReactionIcons(trackData.user_reaction);
+
+      if (currentReactionSubscription) { currentReactionSubscription.unsubscribe(); }
+
+      if (window.App && App.cable) {
+        currentReactionSubscription = App.cable.subscriptions.create({
+          channel: "TrackReactionsChannel",
+          track_id: trackData.id
+        }, {
+          received(data) {
+            if (maxLikeCount) maxLikeCount.innerText = data.likes_count;
+            if (currentPlaylist[currentTrackIndex]) {
+              currentPlaylist[currentTrackIndex].likes_count = data.likes_count;
+            }
+          }
+        });
       }
-    })
-    .catch(error => console.error("Ошибка загрузки треков:", error))
-    .finally(() => {
-      isLoading = false;
-      loader.classList.add("d-none");
+
+      audio.src = trackData.audio_url;
+      audio.play().then(() => updatePlayStateIcons(true)).catch(err => console.error(err));
+    };
+
+    // Окна Макс / Мин
+    const btnMax = document.getElementById("btn-maximize-player");
+    const btnMin = document.getElementById("btn-minimize-player");
+    if (btnMax) btnMax.addEventListener("click", () => { if (maxPlayerContainer) maxPlayerContainer.classList.remove("d-none"); document.body.classList.add("player-open"); });
+    if (btnMin) btnMin.addEventListener("click", () => { if (maxPlayerContainer) maxPlayerContainer.classList.add("d-none"); document.body.classList.remove("player-open"); });
+
+    window.playerNextTrack = function() {
+      if (currentPlaylist.length <= 1) return;
+      currentTrackIndex = (currentTrackIndex + 1) % currentPlaylist.length;
+      startAudioPlayback(currentPlaylist[currentTrackIndex], currentPlaylist);
+    };
+
+    window.playerPrevTrack = function() {
+      if (currentPlaylist.length <= 1) return;
+      currentTrackIndex = (currentTrackIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
+      startAudioPlayback(currentPlaylist[currentTrackIndex], currentPlaylist);
+    };
+
+    const playToggleBtns = [document.getElementById("btn-play-toggle"), document.getElementById("max-btn-play-toggle")];
+    playToggleBtns.forEach(btn => {
+      if (btn) btn.addEventListener("click", () => {
+        if (audio.paused) { audio.play().then(() => updatePlayStateIcons(true)); } 
+        else { audio.pause(); updatePlayStateIcons(false); }
+      });
     });
-  }
-});
+
+    // Изменение ширины ползунков сделано через конкатенацию строк во избежание SyntaxError
+    audio.addEventListener("timeupdate", () => {
+      const current = audio.currentTime;
+      const duration = audio.duration || 0;
+      if (duration === 0) return;
+      const pct = (current / duration) * 100;
+      
+      if (currentProgress) currentProgress.style.width = pct + "%";
+      if (progressPin) progressPin.style.left = pct + "%";
+      if (maxCurrentProgress) maxCurrentProgress.style.width = pct + "%";
+
+      const minCurTxt = document.getElementById("time-current");
+      const maxCurTxt = document.getElementById("max-time-current");
+      if (minCurTxt) minCurTxt.innerText = formatTime(current);
+      if (maxCurTxt) maxCurTxt.innerText = formatTime(current);
+    });
+
+    audio.addEventListener("loadedmetadata", () => {
+      const durationText = formatTime(audio.duration);
+      const minDurTxt = document.getElementById("time-duration");
+      const maxDurTxt = document.getElementById("max-time-duration");
+      if (minDurTxt) minDurTxt.innerText = durationText;
+      if (maxDurTxt) maxDurTxt.innerText = durationText;
+    });
+
+    audio.addEventListener("ended", () => { playerNextTrack(); });
+
+    if (timeline) timeline.addEventListener("click", (e) => { audio.currentTime = (e.offsetX / timeline.clientWidth) * audio.duration; });
+    if (maxTimeline) maxTimeline.addEventListener("click", (e) => { audio.currentTime = (e.offsetX / maxTimeline.clientWidth) * audio.duration; });
+
+    audio.addEventListener("progress", () => {
+      const duration = audio.duration;
+      if (duration > 0 && audio.buffered.length > 0) {
+        const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+        const bufferedPct = (bufferedEnd / duration) * 100;
+        const minBuffer = document.getElementById("progress-buffered");
+        const maxBuffer = document.getElementById("max-player-buffered");
+        if (minBuffer) minBuffer.style.width = bufferedPct + "%";
+        if (maxBuffer) maxBuffer.style.width = bufferedPct + "%";
+      }
+    });
+
+    window.playerToggleLike = function() {
+      if (!currentPlaylist[currentTrackIndex]) return;
+      const track = currentPlaylist[currentTrackIndex];
+      fetch("/tracks/" + track.id + "/reactions/toggle", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ kind: "like" })
+      })
+      .then(response => response.json())
+      .then(data => { track.user_reaction = data.user_reaction; updateReactionIcons(data.user_reaction); });
+    };
+
+    window.playerToggleDislike = function() {
+      if (!currentPlaylist[currentTrackIndex]) return;
+      const track = currentPlaylist[currentTrackIndex];
+      fetch("/tracks/" + track.id + "/reactions/toggle", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ kind: "dislike" })
+      })
+      .then(response => response.json())
+      .then(data => { track.user_reaction = data.user_reaction; updateReactionIcons(data.user_reaction); });
+    };
+
+
+    const logoutForm = document.querySelector(".logout-form-wrapper");
+    if (logoutForm) {
+      logoutForm.addEventListener("submit", () => {
+        if (minPlayerContainer) minPlayerContainer.classList.add("d-none");
+        if (maxPlayerContainer) maxPlayerContainer.classList.add("d-none");
+      });
+    }
+  });
 </script>

@@ -263,43 +263,53 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   // Функция поиска
+    // ФУНКЦИЯ РЕАЛЬНОГО ПОИСКА ИЗ БАЗЫ ДАННЫХ POSTGRESQL
   function performSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    resultsGrid.innerHTML = ""; 
+    const query = searchInput.value.trim();
+    resultsGrid.innerHTML = ""; // Очищаем фон
     
     if (!query) return;
 
-    const filteredUsers = mockUsersDb
-      .filter(user => user.toLowerCase().includes(query))
-      .slice(0, 10);
+    // Делаем живой запрос к нашему новому рельсовому роуту
+    fetch(`/users/search?query=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(filteredUsers => {
+        if (filteredUsers.length === 0) {
+          // Если PostgreSQL никого не нашел, оставляем чистый фон
+          return;
+        }
 
-    filteredUsers.forEach(username => {
-      const isAlreadyAdded = !!authorsContainer.querySelector(`[data-username="${username}"]`);
-      
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "result-user-btn";
-      
-      if (isAlreadyAdded) {
-        btn.style.opacity = "0.4";
-        btn.style.cursor = "not-allowed";
-      }
-      
-      btn.innerText = username;
-      
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (isAlreadyAdded) return;
-        
-        addAuthorRow(username);
-        modal.classList.add("d-none"); 
-        searchInput.value = "";
-        resultsGrid.innerHTML = "";
-      });
-      
-      resultsGrid.appendChild(btn);
-    });
+        // Рендерим оранжевые кнопки для реальных пользователей из БД
+        filteredUsers.forEach(username => {
+          const isAlreadyAdded = !!authorsContainer.querySelector(`[data-username="${username}"]`);
+          
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "result-user-btn";
+          
+          if (isAlreadyAdded) {
+            btn.style.opacity = "0.4";
+            btn.style.cursor = "not-allowed";
+          }
+          
+          btn.innerText = username;
+          
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (isAlreadyAdded) return;
+            
+            addAuthorRow(username);
+            modal.classList.add("d-none"); 
+            searchInput.value = "";
+            resultsGrid.innerHTML = "";
+          });
+          
+          resultsGrid.appendChild(btn);
+        });
+      })
+      .catch(error => console.error("Ошибка поиска пользователей:", error));
   }
+
 
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -313,6 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Добавление строки соавтора с рабочей иконкой корзины
+    // Обновленная функция добавления строки соавтора
   function addAuthorRow(username) {
     const currentCount = authorsContainer.querySelectorAll(".author-item").length;
     if (currentCount >= MAX_AUTHORS) return;
@@ -321,8 +332,10 @@ document.addEventListener("DOMContentLoaded", () => {
     authorDiv.className = "author-item";
     authorDiv.setAttribute("data-username", username);
 
+    // Добавляем текстовое отображение, иконку корзины И скрытый инпут для Rails
     authorDiv.innerHTML = `
       <span class="author-name">${username}</span>
+      <input type="hidden" name="track[coauthors][]" value="${username}">
       <button type="button" class="btn-remove-author" title="Удалить соавтора">
         <img src="/assets/trashcan-icon.png" alt="Удалить" class="trashcan-icon">
       </button>
@@ -337,5 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
     authorsContainer.appendChild(authorDiv);
     updateAddAuthorButton();
   }
+
 });
 </script>

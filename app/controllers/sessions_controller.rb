@@ -41,6 +41,23 @@ class SessionsController < ApplicationController
     end
   end
 
+    # Экшен живого поиска пользователей для модального окна
+  def search_users
+    if params[:query].present?
+      # Ищем пользователей, чей никнейм частично совпадает с запросом
+      # Исключаем текущего авторизованного пользователя
+      @users = User.where("username ILIKE ?", "%#{params[:query]}%")
+                   .where.not(id: session[:user_id])
+                   .limit(10)
+    else
+      @users = []
+    end
+
+    # Возвращаем СУБД-данные в формате JSON массивом строк
+    render json: @users.pluck(:username)
+  end
+
+
   def destroy
     session[:user_id] = nil
     redirect_to root_path, notice: "Вы вышли из системы"

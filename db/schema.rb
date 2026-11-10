@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_101136) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_193101) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -97,6 +97,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_101136) do
     t.index ["user_id"], name: "index_playlists_on_user_id"
   end
 
+  create_table "reactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "track_id", null: false
+    t.string "kind", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["track_id"], name: "index_reactions_on_track_id"
+    t.index ["user_id", "track_id"], name: "index_reactions_on_user_id_and_track_id", unique: true
+    t.index ["user_id"], name: "index_reactions_on_user_id"
+  end
+
   create_table "track_artists", force: :cascade do |t|
     t.bigint "track_id", null: false
     t.bigint "artist_id", null: false
@@ -135,6 +146,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_101136) do
   add_foreign_key "likes", "tracks"
   add_foreign_key "likes", "users"
   add_foreign_key "playlists", "users"
+  add_foreign_key "reactions", "tracks"
+  add_foreign_key "reactions", "users"
   add_foreign_key "track_artists", "artists"
   add_foreign_key "track_artists", "tracks"
 end

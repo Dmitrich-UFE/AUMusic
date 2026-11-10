@@ -1,12 +1,24 @@
 <% tracks.each do |track| %>
-  <div class="track-card">
+  <!-- Добавили класс playable-track-card и data-аттрибуты для передачи данных в JS -->
+    <div class="track-card playable-track-card" 
+       data-id="<%= track.id %>"
+       data-title="<%= track.title %>"
+       data-artists="<%= track.artists.map(&:name).join(', ') %>"
+       data-audio-url="<%= track.audio.attached? ? rails_blob_path(track.audio, only_path: true) : '' %>"
+       data-cover-url="<%= track.cover.attached? ? rails_blob_path(track.cover, only_path: true) : '' %>"
+       data-likes-count="<%= track.likes_count %>"
+       data-user-reaction="<%= logged_in? ? current_user.reactions.find_by(track: track)&.kind : '' %>"
+       style="cursor: pointer;">
+       <!-- Делаем карточку кликабельной -->
+       
     <div class="track-cover-wrapper">
       <% if track.cover.attached? %>
         <%= image_tag track.cover, class: "track-card-cover" %>
       <% else %>
-        <div class="track-card-cover empty-cover"></div> <!-- Заглушка, если нет обложки -->
+        <div class="track-card-cover empty-cover"></div>
       <% end %>
     </div>
+    
     <div class="track-card-info">
       <div class="track-card-title" title="<%= track.title %>"><%= track.title %></div>
       <div class="track-card-artists" title="<%= track.artists.map(&:name).join(', ') %>">

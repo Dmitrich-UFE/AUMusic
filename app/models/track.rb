@@ -7,12 +7,21 @@ class Track < ApplicationRecord
   
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :reactions, dependent: :destroy
 
   # ==========================================
   # СВЯЗИ ACTIVE STORAGE ДЛЯ ФАЙЛОВ
   # ==========================================
   has_one_attached :cover # Один файл обложки
   has_one_attached :audio # Один аудиофайл
+
+  def likes_count
+    reactions.where(kind: 'like').count
+  end
+
+  def dislikes_count
+    reactions.where(kind: 'dislike').count
+  end
   
   # Базовые валидации на уровне сервера (на случай обхода JS)
   validates :title, presence: true, length: { maximum: 50 }
