@@ -43,11 +43,12 @@
       <!-- Секция авторов на странице -->
       <div class="authors-section">
         <h3 class="section-title">Авторы</h3>
-        <div class="authors-list" id="authors-container">
-          <div class="author-item primary-author" data-username="<%= current_user.username %>">
-            <span class="author-name"><%= current_user.username %> (Вы)</span>
-          </div>
-        </div>
+        <div class="authors-list" id="authors-container" data-trash-icon="<%= asset_path('trashcan-icon.png') %>">
+  <div class="author-item primary-author" data-username="<%= current_user.username %>">
+    <span class="author-name"><%= current_user.username %> (Вы)</span>
+  </div>
+</div>
+
         <button type="button" class="btn btn-add-author" id="open-search-modal-btn">Добавить автора</button>
       </div>
 
@@ -70,11 +71,12 @@
       </button>
     </div>
 
+    <!-- Строка поиска в модальном окне -->
     <div class="modal-search-box">
+      <input type="text" placeholder="Найти пользователя... " class="modal-search-input" id="modal-search-input">
       <button type="button" class="modal-search-submit" id="modal-search-btn">
         <%= image_tag "search-icon.png", alt: "Искать", class: "search-icon" %>
       </button>
-      <input type="text" placeholder="искать пользователя..." class="modal-search-input" id="modal-search-input">
     </div>
 
     <!-- Область результатов: изначально пустая -->
@@ -264,22 +266,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Функция поиска
     // ФУНКЦИЯ РЕАЛЬНОГО ПОИСКА ИЗ БАЗЫ ДАННЫХ POSTGRESQL
-  function performSearch() {
+    function performSearch() {
     const query = searchInput.value.trim();
-    resultsGrid.innerHTML = ""; // Очищаем фон
+    resultsGrid.innerHTML = "";
     
     if (!query) return;
 
-    // Делаем живой запрос к нашему новому рельсовому роуту
     fetch(`/users/search?query=${encodeURIComponent(query)}`)
       .then(response => response.json())
       .then(filteredUsers => {
         if (filteredUsers.length === 0) {
-          // Если PostgreSQL никого не нашел, оставляем чистый фон
+          const emptyMsg = document.createElement("p");
+          emptyMsg.className = "no-users-found";
+          emptyMsg.innerText = "Пользователи не найдены";
+          resultsGrid.appendChild(emptyMsg);
           return;
         }
 
-        // Рендерим оранжевые кнопки для реальных пользователей из БД
         filteredUsers.forEach(username => {
           const isAlreadyAdded = !!authorsContainer.querySelector(`[data-username="${username}"]`);
           
@@ -311,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
+
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -324,20 +328,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Добавление строки соавтора с рабочей иконкой корзины
     // Обновленная функция добавления строки соавтора
-  function addAuthorRow(username) {
+    function addAuthorRow(username) {
     const currentCount = authorsContainer.querySelectorAll(".author-item").length;
     if (currentCount >= MAX_AUTHORS) return;
+
+    // Считываем правильный путь с хэшем из HTML-атрибута контейнера
+    const trashIconPath = authorsContainer.getAttribute("data-trash-icon");
 
     const authorDiv = document.createElement("div");
     authorDiv.className = "author-item";
     authorDiv.setAttribute("data-username", username);
 
-    // Добавляем текстовое отображение, иконку корзины И скрытый инпут для Rails
     authorDiv.innerHTML = `
       <span class="author-name">${username}</span>
       <input type="hidden" name="track[coauthors][]" value="${username}">
       <button type="button" class="btn-remove-author" title="Удалить соавтора">
-        <img src="/assets/trashcan-icon.png" alt="Удалить" class="trashcan-icon">
+        <img src="${trashIconPath}" alt="Удалить" class="trashcan-icon">
       </button>
     `;
 
@@ -350,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authorsContainer.appendChild(authorDiv);
     updateAddAuthorButton();
   }
+
 
 });
 </script>

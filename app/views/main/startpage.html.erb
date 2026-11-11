@@ -8,7 +8,7 @@
   
   <!-- 2. Форма поиска музыки -->
   <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
-    <%= form.text_field :query, placeholder: "искать...", class: "search-input" %>
+    <%= form.text_field :query, placeholder: "Найти пользователя, трек, плейлист...", class: "search-input" %>
     <button type="submit" class="search-submit-btn">
       <%= image_tag "search-icon.png", alt: "Найти", class: "search-icon" %>
     </button>

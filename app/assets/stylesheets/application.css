@@ -511,7 +511,7 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
 
 /* Иконки внутри кнопок остаются аккуратными */
 .carousel-item-btn img {
-  height: 32px !important;
+  height: 40px !important;
   width: auto !important;
   object-fit: contain !important;
 }
