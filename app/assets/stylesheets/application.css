@@ -323,20 +323,37 @@ body {
   gap: 20px !important;
   height: 100% !important;
 }
+
 .player-center-info.horizontal-capsule {
   display: flex !important;
   align-items: center !important;
-  gap: 15px !important;
+  gap: 20px !important; /* Увеличили расстояние для гармоничного размещения */
   position: absolute !important;
   left: 50% !important;
   top: 50% !important;
-  transform: translate(-50%, -50%) !important; /* Идеальное математическое центрирование */
-  max-width: 40% !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: 55% !important; /* Немного расширили макс-ширину капсулы */
   height: 56px !important;
   background-color: #203040 !important;
-  padding: 0 25px 0 8px !important;
+  padding: 0 15px 0 8px !important; /* Выровняли боковые отступы */
   border-radius: 30px !important;
   box-sizing: border-box !important;
+}
+
+/* Группа лайков внутри капсулы справа от текста */
+.player-min-reactions-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important; /* Небольшой отступ между лайком и дизлайком */
+  margin-left: auto; /* Прижимает блок реакций к правому краю капсулы */
+  padding-left: 10px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1); /* Легкий визуальный разделитель */
+}
+
+/* Фиксируем размер иконок лайков в свернутом плеере */
+.player-min-reactions-group .player-btn img {
+  height: 30px !important;
+  width: auto !important;
 }
 
 .player-min-cover {
@@ -375,12 +392,39 @@ body {
 }
 body.player-open { overflow: hidden !important; height: 100vh !important; }
 
-.max-player-header-bg {
+/*.max-player-header-bg {
   position: absolute; top: 0; left: 0; width: 100%; height: 90px;
   background-color: #203040 !important; display: flex; align-items: center; justify-content: flex-end; padding-right: 40px; box-sizing: border-box; z-index: 100;
-}
-.close-panel-arrow { width: 36px; cursor: pointer; }
+} */
 
+/* --- ОБНОВЛЕННАЯ СТРЕЛКА И КЛИКАБЕЛЬНАЯ ШАПКА #203040 --- */
+.max-player-header-bg-btn {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 90px !important;
+  background-color: #203040 !important; /* Фоновый цвет верхней полосы */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding-right: 40px !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  cursor: pointer !important;
+  z-index: 100;
+  transition: background-color 0.2s ease;
+}
+
+.max-player-header-bg-btn:hover {
+  background-color: #152535 !important; /* Легкое подсвечивание при наведении на полосу */
+}
+
+.close-panel-arrow {
+  height: 72px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
 .max-player-layout { display: flex; align-items: center; justify-content: center; margin: auto; gap: 60px; width: 100%; max-width: 1000px; }
 .max-cover-box { width: 440px; height: 440px; border-radius: 30px; overflow: hidden; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .max-cover-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -389,7 +433,7 @@ body.player-open { overflow: hidden !important; height: 100vh !important; }
 .max-track-title { font-size: 36px; color: #FFD460; margin: 0 0 10px 0; font-weight: 700; }
 .max-track-artists { font-size: 22px; color: #F07B3F; margin-bottom: 35px; }
 
-.max-actions-carousel {
+/*.max-actions-carousel {
 display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; margin-bottom: 35px; box-sizing: border-box;
 -ms-overflow-style: none; scrollbar-width: none;
 }
@@ -408,7 +452,7 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
 .max-controls-row { display: flex; align-items: center; justify-content: center; gap: 50px; }
 .max-nav-btn img { height: 48px; }
 .max-play-big img { height: 80px; }
-/* Жесткое скрытие элементов с классом d-none (исправляет пустой плеер при перезагрузке) */
+/* Жесткое скрытие элементов с классом d-none (исправляет пустой плеер при перезагрузке) *//*
 .d-none {
   display: none !important;
 }
@@ -417,4 +461,108 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
 .max-player-layout { flex-direction: column; gap: 30px; }
 .max-cover-box { width: 260px; height: 280px; }
 .player-center-info { display: none; }
+}
+*/
+
+/* --- СЕКЦИЯ ФИКСИРОВАННЫХ КНОПОК ДЕЙСТВИЙ (ВМЕСТО КАРУСЕЛИ) --- */
+/* --- РАСПРЕДЕЛЕНИЕ ШИРИНЫ КНОПОК ДЕЙСТВИЙ --- */
+.max-actions-fixed-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  max-width: 500px;
+  margin-bottom: 35px !important;
+  box-sizing: border-box !important;
+  gap: 10px !important;
+}
+
+.carousel-item-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  height: 50px !important;
+  background-color: #EA5455 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 20px !important;
+  font-family: 'Merriweather', serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+/* Кнопки Лайка и Комментариев (Увеличены на ~35% за счет коэффициента flex) */
+.carousel-item-btn.like-stat,
+.carousel-item-btn.comment-star {
+  flex: 1.35 !important; /* Получают больше пространства под цифры */
+  padding: 0 15px !important;
+}
+
+/* Кнопки Дизлайка и Троеточия (Уменьшены на ~35%) */
+.carousel-item-btn.dislike-stat,
+.carousel-item-btn.options-stat {
+  flex: 0.65 !important; /* Сужаются, так как счетчиков внутри нет */
+  padding: 0 !important;
+}
+
+/* Иконки внутри кнопок остаются аккуратными */
+.carousel-item-btn img {
+  height: 32px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+/* Ползунок в развернутом режиме */
+.max-timeline-wrapper { 
+  width: 100% !important; 
+  max-width: 500px; /* Синхронизируем лимиты ширины с кнопками */
+  margin-bottom: 35px !important; 
+}
+
+.max-progress-area { width: 100% !important; height: 6px !important; 
+  background-color:  rgba(255, 255, 255, 0.15) !important; border-radius: 3px !important; position: relative 
+  !important; cursor: pointer !important; }
+.max-buffered-bar { position: absolute; top:0; left:0; height:100%; width:0%; 
+  background-color: rgba(255,255,255,0.3); border-radius:3px; }
+.max-progress-bar { position: absolute; top:0; left:0; height:100%; 
+  width:0%; background-color: #FFFFFF; border-radius:3px; }
+.max-progress-bar::after {
+  content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; 
+  height: 14px; background-color: #EA5455; border-radius: 50%; z-index: 5;
+}
+.max-time-labels { display: flex !important; justify-content: space-between !important; 
+  color: #FFFFFF !important; font-size: 16px !important; margin-top: 8px !important; }
+
+/* Пульт управления под таймлайном */
+.max-controls-row { 
+  display: flex !important; 
+  align-items: center !important; 
+  justify-content: center !important; 
+  gap: 60px !important;
+  width: 100% !important;
+  max-width: 500px;
+}
+
+/* Кнопки Назад и Вперед увеличены в 1.5 раза */
+.max-nav-btn img { 
+  height: 65px !important; /* 48px * 1.5 = 72px */
+  width: auto !important;
+}
+
+/* Кнопка Плей/Пауза большая */
+.max-play-big img { 
+  height: 80px !important; 
+  width: auto !important;
+}
+
+.d-none { display: none !important; }
+
+@media (max-width: 900px) {
+  .max-player-layout { flex-direction: column; gap: 30px; }
+  .max-cover-box { width: 260px; height: 260px; }
+  .max-actions-fixed-row, .max-timeline-wrapper, .max-controls-row { max-width: 100%; }
 }

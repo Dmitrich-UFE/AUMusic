@@ -45,11 +45,16 @@
 <!-- ========================================== -->
 <!-- 1. СВЕРНУТЫЙ ПЛЕЕР -->
 <!-- ========================================== -->
-<div id="au-player-minimized-container" class="d-none"  data-turbo-cache="false"
+<!-- ========================================== -->
+<!-- 1. СВЕРНУТЫЙ ПЛЕЕР (ОБНОВЛЕННЫЙ) -->
+<!-- ========================================== -->
+<div id="au-player-minimized-container" class="d-none" data-turbo-cache="false"
      data-img-like="<%= asset_path('like_icon.png') %>"
      data-img-like-confirmed="<%= asset_path('like_confirmed_icon.png') %>"
      data-img-dislike="<%= asset_path('dislike_icon.png') %>"
-     data-img-dislike-confirmed="<%= asset_path('dislike_confirmed_icon.png') %>">
+     data-img-dislike-confirmed="<%= asset_path('dislike_confirmed_icon.png') %>"
+     data-img-min-play="<%= asset_path('play_icon.png') %>"
+     data-img-min-pause="<%= asset_path('pause_icon.png') %>">
 
   <!-- Шкала прогресса свернутого плеера -->
   <div class="player-progress-area" id="progress-timeline">
@@ -59,6 +64,7 @@
   </div>
 
   <div class="player-min-panel">
+    <!-- Блок управления слева -->
     <div class="player-ctrl-group">
       <button type="button" class="player-btn" onclick="playerPrevTrack()">
         <%= image_tag "prev_track.png", alt: "Prev" %>
@@ -72,32 +78,41 @@
       <div class="player-time-display"><span id="time-current">0:00</span> / <span id="time-duration">0:00</span></div>
     </div>
 
-    <!-- ТЕМНАЯ ПОДЛОЖКА #203040 ДЛЯ ДАННЫХ ТРЕКА -->
+    <!-- ЦЕНТРАЛЬНАЯ КАПСУЛА: ТЕПЕРЬ С ЛАЙКАМИ СПРАВА ОТ ТЕКСТА -->
     <div class="player-center-info horizontal-capsule">
       <img src="" alt="" class="player-min-cover" id="player-cover-img">
       <div class="player-text-block">
         <div class="player-track-title" id="player-title-txt">Название</div>
         <div class="player-track-artists" id="player-artists-txt">Авторы</div>
       </div>
+      <!-- Кнопки лайка и дизлайка переехали сюда -->
+      <div class="player-min-reactions-group">
+        <button type="button" class="player-btn" id="min-like-btn" onclick="playerToggleLike()"><%= image_tag "like_icon.png" %></button>
+        <button type="button" class="player-btn" id="min-dislike-btn" onclick="playerToggleDislike()"><%= image_tag "dislike_icon.png" %></button>
+      </div>
     </div>
 
+    <!-- Справа остается только кнопка раскрытия панели -->
     <div class="player-right-group">
-      <button type="button" class="player-btn" id="min-like-btn" onclick="playerToggleLike()"><%= image_tag "like_icon.png" %></button>
-      <button type="button" class="player-btn" id="min-dislike-btn" onclick="playerToggleDislike()"><%= image_tag "dislike_icon.png" %></button>
       <button type="button" class="player-btn open-panel-trigger" id="btn-maximize-player"><%= image_tag "open_panel_icon.png" %></button>
     </div>
   </div>
 </div>
 
+
 <!-- ========================================== -->
-<!-- 2. РАЗВЕРНУТЫЙ ПЛЕЕР -->
+<!-- 2. РАЗВЕРНУТЫЙ ПЛЕЕР (ОБНОВЛЕННЫЙ) -->
 <!-- ========================================== -->
-<div id="player-full-screen" class="player-max-panel d-none">
-  <!-- ВЕРХНЯЯ ШАПКА-ПОДЛОЖКА ЦВЕТА #203040 С КНОПКОЙ ЗАКРЫТИЯ -->
+<div id="player-full-screen" class="player-max-panel d-none"
+     data-img-play="<%= asset_path('play_icon.png') %>"
+     data-img-pause="<%= asset_path('pause_icon.png') %>">
+  
   <div class="max-player-header-bg">
-    <button type="button" class="player-btn close-panel-trigger" id="btn-minimize-player">
-      <%= image_tag "close_panel_icon.png", class: "close-panel-arrow" %>
-    </button>
+      <!-- ВЕРХНЯЯ ШАПКА ТЕПЕРЬ САМА ЯВЛЯЕТСЯ КНОПКОЙ СВОРАЧИВАНИЯ -->
+  <button type="button" class="max-player-header-bg-btn" id="btn-minimize-player" title="Свернуть панель">
+    <%= image_tag "close_panel_icon.png", class: "close-panel-arrow", alt: "Свернуть" %>
+  </button>
+
   </div>
 
   <div class="max-player-layout">
@@ -109,15 +124,19 @@
       <h2 class="max-track-title" id="max-player-title">Название</h2>
       <div class="max-track-artists" id="max-player-artists">Авторы</div>
 
-      <div class="max-actions-carousel">
+      <!-- Ряд кнопок действий (без прокрутки, строго 4 элемента) -->
+      <div class="max-actions-fixed-row">
         <button type="button" class="carousel-item-btn like-stat" id="max-like-btn" onclick="playerToggleLike()">
           <%= image_tag "like_icon.png" %> <span id="like-count-display">0</span>
         </button>
         <button type="button" class="carousel-item-btn dislike-stat" id="max-dislike-btn" onclick="playerToggleDislike()">
           <%= image_tag "dislike_icon.png" %>
         </button>
-        <button type="button" class="carousel-item-btn comment-star">
+        <button type="button" class="carousel-item-btn comment-star" id="max-comment-btn">
           <%= image_tag "comments_icon.png" %> <span id="comment-count-display">0</span>
+        </button>
+        <button type="button" class="carousel-item-btn options-stat" id="max-options-btn">
+          <%= image_tag "point3_icon.png", alt: "Опции" %>
         </button>
       </div>
 
@@ -140,6 +159,7 @@
     </div>
   </div>
 </div>
+
 
 <script>
   // 1. Инициализация глобального Action Cable соединения из ресурсов Rails
@@ -299,16 +319,36 @@
       } catch (e) { console.warn(e); }
     }
 
-    function updatePlayStateIcons(isPlaying) {
+      function updatePlayStateIcons(isPlaying) {
       try {
+        const minPlayer = document.getElementById("au-player-minimized-container");
+        const maxPlayer = document.getElementById("player-full-screen");
+        
         const playImg = document.getElementById("img-play-state");
         const maxBtn = document.getElementById("max-btn-play-toggle");
         const maxPlayBig = maxBtn ? maxBtn.querySelector("img") : null;
-        const iconName = isPlaying ? "pause_icon.png" : "play_icon.png";
-        if (playImg) playImg.src = "/assets/" + iconName;
-        if (maxPlayBig) maxPlayBig.src = "/assets/" + iconName;
-      } catch (e) { console.warn(e); }
+
+        // Пути с хэшами для свернутого плеера
+        const minPlayAsset = minPlayer ? minPlayer.getAttribute("data-img-min-play") : "/assets/play_icon.png";
+        const minPauseAsset = minPlayer ? minPlayer.getAttribute("data-img-min-pause") : "/assets/pause_icon.png";
+
+        // Пути с хэшами для развернутого плеера
+        const maxPlayAsset = maxPlayer ? maxPlayer.getAttribute("data-img-play") : "/assets/play_icon.png";
+        const maxPauseAsset = maxPlayer ? maxPlayer.getAttribute("data-img-pause") : "/assets/pause_icon.png";
+
+        // Обновляем свернутый плеер без 404 ошибок
+        if (playImg) {
+          playImg.src = isPlaying ? minPauseAsset : minPlayAsset;
+        }
+        
+        // Обновляем развернутый плеер без 404 ошибок
+        if (maxPlayBig) {
+          maxPlayBig.src = isPlaying ? maxPauseAsset : maxPlayAsset;
+        }
+      } catch (e) { console.warn("Ошибка подмены иконок воспроизведения:", e); }
     }
+
+
 
     window.startAudioPlayback = function(trackData, playlistArray = []) {
       currentPlaylist = playlistArray.length > 0 ? playlistArray : [trackData];
