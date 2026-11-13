@@ -6,9 +6,18 @@
   <% end %>
   <div class="header-right-block">
     <div class="user-session-block">
-      <span class="session-username"><%= mask_username(current_user.username) %></span>
-      <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+  <%= link_to user_profile_path(current_user.username), class: "profile-link-area" do %>
+    <div class="header-avatar-box">
+      <% if current_user.avatar.attached? %>
+        <%= image_tag current_user.avatar, class: "header-avatar-img" %>
+      <% end %>
     </div>
+    <span class="session-username"><%= mask_username(current_user.username) %></span>
+  <% end %>
+
+  <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+</div>
+
   </div>
 </header>
 
@@ -26,8 +35,10 @@
 
       <div class="drop-zone audio-zone" id="audio-drop-zone">
         <span class="drop-zone-text">Перетащите<br>музыку сюда</span>
-        <%= form.file_field :audio, id: "audio-file-input", accept: ".mp3,.flac,.ogg", style: "display:none;" %>
+        <%= form.file_field :audio, id: "audio-file-input", accept: ".mp3,.ogg,.flac", style: "display:none;" %>
       </div>
+      <p class="upload-hint" id="audio-hint">Принимается формат .mp3, .flac и .ogg</p>
+
     </div>
 
     <!-- Правая колонка: текст и соавторы -->
@@ -44,16 +55,40 @@
       <div class="authors-section">
         <h3 class="section-title">Авторы</h3>
         <div class="authors-list" id="authors-container" data-trash-icon="<%= asset_path('trashcan-icon.png') %>">
-  <div class="author-item primary-author" data-username="<%= current_user.username %>">
-    <span class="author-name"><%= current_user.username %> (Вы)</span>
-  </div>
-</div>
+        <div class="author-item primary-author" data-username="<%= current_user.username %>">
+        <span class="author-name"><%= current_user.username %> (Вы)</span>
+      </div>
+    </div>
 
         <button type="button" class="btn btn-add-author" id="open-search-modal-btn">Добавить автора</button>
       </div>
 
+      <!-- НОВЫЙ ПОДРАЗДЕЛ: ВИДИМОСТЬ -->
+      <div class="visibility-section">
+        <h3 class="section-title">Видимость</h3>
+        
+        <!-- Скрытое поле для передачи выбранного значения в Rails (private или public) -->
+        <%= form.hidden_field :visibility, value: "private", id: "track-visibility-input" %>
+
+        <div class="visibility-dropdown-wrapper">
+          <!-- Кликабельная зона #203040 -->
+          <div class="visibility-selector" id="visibility-trigger"
+               data-icon-closed="<%= asset_path('close_panel_icon.png') %>"
+               data-icon-open="<%= asset_path('open_panel_icon.png') %>">
+            <span class="visibility-current-text" id="visibility-label">Приватный</span>
+            <%= image_tag "close_panel_icon.png", alt: "Раскрыть", class: "visibility-arrow", id: "visibility-arrow-img" %>
+          </div>
+
+          <!-- Выпадающий список -->
+          <div class="visibility-options d-none" id="visibility-menu">
+            <div class="visibility-option selected" data-value="private">Приватный</div>
+            <div class="visibility-option" data-value="public">Публичный</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Кнопка публикации композиции -->
-      <%= form.submit "Опубликовать композицию", class: "btn btn-submit", id: "submit-track-btn", disabled: true %>
+      <%= form.submit "Сохранить композицию", class: "btn btn-submit", id: "submit-track-btn", disabled: true %>
     </div>
 
   <% end %> <!-- Конец формы -->
@@ -86,6 +121,27 @@
 
   </div>
 </div>
+
+<!-- ======================================================= -->
+<!-- МОДАЛЬНОЕ ОКНО ПРЕДУПРЕЖДЕНИЯ ПРИ ПУБЛИЧНОМ ДОСТУПЕ -->
+<!-- ======================================================= -->
+<div class="modal-overlay d-none" id="public-confirm-modal">
+  <div class="modal-window confirm-window">
+    <h2 class="confirm-title">Внимание!</h2>
+    
+    <p class="confirm-desc">
+      Вы открываете публичный доступ к данной композиции. Если не хотите этого, выберите в разделе “Видимость” значение “Приватный”.
+    </p>
+    
+    <p class="confirm-question">Хотите опубликовать композицию?</p>
+
+    <div class="confirm-actions">
+      <button type="button" class="btn-confirm-yes" id="confirm-publish-btn">Да, опубликовать</button>
+      <button type="button" class="btn-confirm-no" id="cancel-publish-btn">Нет, не публиковать</button>
+    </div>
+  </div>
+</div>
+
 
 
 <script>
@@ -132,9 +188,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const file = filesList[0];
     if (!file) return;
 
+    const audioHint = document.getElementById("audio-hint");
+    audioHint.classList.remove("error");
+    audioHint.innerText = "Принимается формат .mp3 и ogg";
+
     const allowedExtensions = /(\.mp3|\.flac|\.ogg)$/i;
     if (!allowedExtensions.exec(file.name)) {
-      alert("Неверный формат аудио. Принимаются только .mp3, .flac, .ogg");
+      const ext = file.name.includes(".") ? file.name.substring(file.name.lastIndexOf(".")) : "неизвестный";
+      audioHint.classList.add("error");
+      audioHint.innerText = `Неверный формат: ${ext}. Принимаются только файлы формата .mp3, .flac, .ogg`;
       hasAudio = false;
       checkFormValidity();
       return;
@@ -149,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hasAudio = true;
     checkFormValidity();
   }
+
 
   // --- ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ОБЛОЖКИ ---
   function validateAndSetCover(filesList) {
@@ -184,10 +247,28 @@ document.addEventListener("DOMContentLoaded", () => {
     img.src = URL.createObjectURL(file);
     img.onload = function() {
       if (this.width !== this.height) {
-        coverHint.classList.add("error");
-        coverHint.innerText = "Для обложки следует использовать изображения формата 1:1";
-        hasCover = false;
-        checkFormValidity();
+        const size = Math.min(this.width, this.height);
+        const offsetX = (this.width - size) / 2;
+        const offsetY = (this.height - size) / 2;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(this, offsetX, offsetY, size, size, 0, 0, size, size);
+
+        canvas.toBlob((blob) => {
+          const croppedFile = new File([blob], file.name, { type: file.type, lastModified: Date.now() });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(croppedFile);
+          coverInput.files = dataTransfer.files;
+
+          coverDropZone.style.backgroundImage = `url('${URL.createObjectURL(croppedFile)}')`;
+          coverText.style.display = "none";
+          hasCover = true;
+          checkFormValidity();
+        }, file.type);
         return;
       }
 
@@ -197,6 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hasCover = true;
       checkFormValidity();
     };
+
   }
 
   // --- ПРИВЯЗКА СОБЫТИЙ МЕДИАЗОН ---
@@ -355,6 +437,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
     authorsContainer.appendChild(authorDiv);
     updateAddAuthorButton();
+  }
+
+
+    // --- УПРАВЛЕНИЕ ВИДИМОСТЬЮ И ПОДТВЕРЖДЕНИЕМ ПУБЛИКАЦИИ ---
+  const musicForm = document.getElementById("music-form");
+  const visibilityTrigger = document.getElementById("visibility-trigger");
+  const visibilityMenu = document.getElementById("visibility-menu");
+  const visibilityLabel = document.getElementById("visibility-label");
+  const visibilityArrow = document.getElementById("visibility-arrow-img");
+  const visibilityInput = document.getElementById("track-visibility-input");
+  const visibilityOptions = document.querySelectorAll(".visibility-option");
+
+  const confirmModal = document.getElementById("public-confirm-modal");
+  const confirmYesBtn = document.getElementById("confirm-publish-btn");
+  const confirmNoBtn = document.getElementById("cancel-publish-btn");
+
+  let isPublicConfirmed = false;
+
+  // Открытие / закрытие выпадающего списка
+  if (visibilityTrigger) {
+    visibilityTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = visibilityMenu.classList.contains("d-none");
+      
+      if (isHidden) {
+        visibilityMenu.classList.remove("d-none");
+        visibilityArrow.src = visibilityTrigger.getAttribute("data-icon-open");
+      } else {
+        visibilityMenu.classList.add("d-none");
+        visibilityArrow.src = visibilityTrigger.getAttribute("data-icon-closed");
+      }
+    });
+  }
+
+  // Закрытие списка при клике вне его
+  document.addEventListener("click", () => {
+    if (visibilityMenu && !visibilityMenu.classList.contains("d-none")) {
+      visibilityMenu.classList.add("d-none");
+      visibilityArrow.src = visibilityTrigger.getAttribute("data-icon-closed");
+    }
+  });
+
+  // Выбор варианта в списке
+  visibilityOptions.forEach(option => {
+    option.addEventListener("click", () => {
+      const selectedValue = option.getAttribute("data-value");
+      visibilityInput.value = selectedValue;
+      visibilityLabel.innerText = option.innerText;
+
+      // Меняем текст главной кнопки формы
+      if (selectedValue === "public") {
+        submitBtn.value = "Опубликовать композицию";
+      } else {
+        submitBtn.value = "Сохранить композицию";
+      }
+
+      visibilityMenu.classList.add("d-none");
+      visibilityArrow.src = visibilityTrigger.getAttribute("data-icon-closed");
+    });
+  });
+
+  // Перехват отправки формы для показа предупреждения при публичном доступе
+  if (musicForm) {
+    musicForm.addEventListener("submit", (e) => {
+      if (visibilityInput.value === "public" && !isPublicConfirmed) {
+        e.preventDefault(); // Останавливаем немедленную отправку
+        confirmModal.classList.remove("d-none");
+      }
+    });
+  }
+
+  // Отказ от публикации в окне предупреждения
+  if (confirmNoBtn) {
+    confirmNoBtn.addEventListener("click", () => {
+      confirmModal.classList.add("d-none");
+    });
+  }
+
+  // Согласие на публикацию: закрываем окно и отправляем форму (после чего контроллер сделает редирект на главную)
+  if (confirmYesBtn) {
+    confirmYesBtn.addEventListener("click", () => {
+      isPublicConfirmed = true;
+      confirmModal.classList.add("d-none");
+      musicForm.requestSubmit(); // Отправляем форму на сервер
+    });
   }
 
 

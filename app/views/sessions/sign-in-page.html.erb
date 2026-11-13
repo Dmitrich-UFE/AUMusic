@@ -31,7 +31,7 @@
     <%= form_with url: login_path, method: :post, id: "login-form", class: "sign-form" do |form| %>
       <div class="form-group-wrapper">
         <div class="form-group">
-          <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input", id: "login-username-input" %>
+          <%= form.text_field :login, placeholder: "Никнейм", class: "form-input", id: "login-username-input" %>
         </div>
         <div class="live-error" id="login-username-error"></div>
       </div>
@@ -51,7 +51,7 @@
       
       <div class="form-group-wrapper">
         <div class="form-group">
-          <%= form.text_field :login, placeholder: "Никнейм или Email", class: "form-input", id: "reg-username-input" %>
+          <%= form.text_field :login, placeholder: "Никнейм", class: "form-input", id: "reg-username-input" %>
         </div>
         <div class="live-error" id="reg-username-error"></div>
       </div>

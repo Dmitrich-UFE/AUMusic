@@ -21,5 +21,5 @@ Rails.application.routes.draw do
   # НОВЫЙ МАРШРУТ: живой поиск пользователей
   get "/users/search", to: "sessions#search_users", as: "search_users"
   post "/tracks/:track_id/reactions/toggle", to: "reactions#toggle", as: "toggle_track_reaction"
-
+  get "/user/:username", to: "users#show", as: "user_profile"
 end

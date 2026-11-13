@@ -22,9 +22,18 @@
       <% end %>
 
       <div class="user-session-block">
-        <span class="session-username"><%= mask_username(current_user.username) %></span>
-        <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
-      </div>
+  <%= link_to user_profile_path(current_user.username), class: "profile-link-area" do %>
+    <div class="header-avatar-box">
+      <% if current_user.avatar.attached? %>
+        <%= image_tag current_user.avatar, class: "header-avatar-img" %>
+      <% end %>
+    </div>
+    <span class="session-username"><%= mask_username(current_user.username) %></span>
+  <% end %>
+
+  <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+</div>
+
     </div>
   <% else %>
     <%= link_to "Войти", signin_path, class: "login-button" %>

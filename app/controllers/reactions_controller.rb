@@ -1,8 +1,10 @@
 class ReactionsController < ApplicationController
   before_action :require_login
 
-    def toggle
+  def toggle
     track = Track.find(params[:track_id])
+    return head :forbidden unless track.accessible_by?(current_user)
+    
     reaction = current_user.reactions.find_by(track: track)
     current_kind = nil
 

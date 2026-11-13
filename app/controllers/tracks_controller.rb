@@ -7,30 +7,23 @@ class TracksController < ApplicationController
   end
 
 
-    def create
-    # Вырезаем соавторов из общих параметров перед инициализацией трека, 
-    # так как в самой таблице tracks этого поля нет
+      def create
     coauthor_names = track_params[:coauthors] || []
     clean_params = track_params.except(:coauthors)
 
-    @track = Track.new(clean_params)
-    @track.duration = 180 if @track.respond_to?(:duration) # Временная заглушка длительности
+    # Привязываем трек к текущему пользователю по его ID
+    @track = current_user.tracks.build(clean_params)
+    @track.duration = 180 if @track.respond_to?(:duration)
 
     if @track.save
-      # 1. Привязываем главного автора (текущего пользователя)
       main_artist = current_user.artist || current_user.create_artist!(name: current_user.username)
       @track.artists << main_artist
 
-      # 2. Привязываем соавторов из модального окна
       coauthor_names.each do |name|
-        # Ищем пользователя по никнейму
         user = User.find_by(username: name.downcase)
-        next unless user # Если пользователь не найден в БД, пропускаем
+        next unless user
 
-        # Находим его музыкальный профиль или создаем новый
         artist = user.artist || user.create_artist!(name: user.username)
-        
-        # Записываем связь в Many-to-Many таблицу track_artists в PostgreSQL
         @track.artists << artist unless @track.artists.include?(artist)
       end
 
@@ -41,16 +34,12 @@ class TracksController < ApplicationController
     end
   end
 
-
-
   private
 
-  # Разрешаем принимать текстовые поля И файлы из формы
-
   def track_params
-    # Разрешаем принимать массив соавторов coauthors: []
-    params.require(:track).permit(:title, :description, :cover, :audio, coauthors: [])
+    params.require(:track).permit(:title, :description, :cover, :audio, :visibility, coauthors: [])
   end
+
 
   def require_login
     unless logged_in?
@@ -63,6 +52,13 @@ class TracksController < ApplicationController
       redirect_to root_path, alert: "У вас нет прав для загрузки музыки."
     end
   end
+
+  def show
+  @track = Track.find(params[:id])
+  unless @track.accessible_by?(current_user)
+    redirect_to root_path, alert: "Этот трек является приватным."
+  end
+end
 
   
 end

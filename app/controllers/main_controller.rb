@@ -3,8 +3,9 @@ class MainController < ApplicationController
     @per_page = 40
     @page = params[:page].to_i > 0 ? params[:page].to_i : 1
     
-    # Подгружаем треки с авторами из PostgreSQL, разбивая по 40 штук
-    @tracks = Track.includes(:artists)
+    # Фильтруем треки через scope с проверкой по current_user.id
+    @tracks = Track.visible_for(current_user)
+                   .includes(:artists)
                    .order(created_at: :desc)
                    .limit(@per_page)
                    .offset((@page - 1) * @per_page)

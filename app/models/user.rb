@@ -2,6 +2,7 @@ class User < ApplicationRecord
   # Отключаем встроенную валидацию присутствия пароля (validations: false),
   # но оставляем само хэширование, чтобы написать кастомную русскую валидацию
   has_secure_password validations: false
+  has_one_attached :avatar
 
   validates :username, presence: { message: "Никнейм не может быть пустым" },
                        uniqueness: { message: "Этот никнейм уже занят" },
@@ -29,6 +30,9 @@ class User < ApplicationRecord
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :reactions, dependent: :destroy
+
+  has_many :tracks, dependent: :destroy 
+  has_many :playlists, dependent: :destroy
 
   # Связь для музыканта (у музыканта может быть профиль его группы/артиста)
   has_one :artist, dependent: :destroy

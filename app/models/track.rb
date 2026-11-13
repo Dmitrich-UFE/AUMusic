@@ -1,4 +1,5 @@
 class Track < ApplicationRecord
+  belongs_to :user, optional: true
   belongs_to :album, optional: true
 
   # Связь «многие ко многим» с соавторами
@@ -14,6 +15,21 @@ class Track < ApplicationRecord
   # ==========================================
   has_one_attached :cover # Один файл обложки
   has_one_attached :audio # Один аудиофайл
+
+  enum :visibility, { public: "public", private: "private" }, prefix: true, default: "private"
+
+  scope :visible_for, ->(current_user) {
+    if current_user
+      where(visibility: "public").or(where(visibility: "private", user_id: current_user.id))
+    else
+      where(visibility: "public")
+    end
+  }
+
+  # Метод точечной проверки прав доступа к конкретному треку по ID
+  def accessible_by?(current_user)
+    visibility_public? || (current_user.present? && user_id == current_user.id)
+  end
 
   def likes_count
     reactions.where(kind: 'like').count

@@ -140,13 +140,47 @@ body {
   flex-shrink: 0;
 }
 
+/* Кликабельная зона аватара и имени */
+.profile-link-area {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  text-decoration: none;
+  padding-right: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.profile-link-area:hover {
+  background-color: #293d52;
+}
+
+/* Белый скругленный прямоугольник аватара */
+.header-avatar-box {
+  width: 54px;
+  height: 54px;
+  background-color: #FFFFFF;
+  border-radius: 30px; /* Тот же радиус скругления, что и у подложки */
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
 .session-username {
   color: #FFFFFF;
   font-family: 'Merriweather', serif;
   font-size: 20px;
   font-weight: 700;
-  padding: 0 20px;
-  background-color: #203040;
+  padding-left: 15px;
+  background-color: transparent;
 }
 
 .user-session-block form {
