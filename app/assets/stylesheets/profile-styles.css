@@ -299,3 +299,16 @@ body {
     font-size: 12pt !important;
   }
 }
+
+
+/* Кликабельные никнеймы авторов в обоих плеерах и карточках */
+.artist-profile-link {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.15s ease, text-decoration 0.15s ease;
+}
+
+.artist-profile-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}

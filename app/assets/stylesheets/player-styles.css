@@ -322,3 +322,53 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
   .max-cover-box { width: 260px; height: 260px; }
   .max-actions-fixed-row, .max-timeline-wrapper, .max-controls-row { max-width: 100%; }
 }
+
+
+/* Контейнер-маска для длинного названия в развернутом плеере */
+.max-title-marquee-box {
+  width: 100%;
+  max-width: 500px; /* Строго совпадает с шириной кнопок и ползунка */
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.max-track-title {
+  display: inline-block;
+  font-size: 36px;
+  color: #FFD460;
+  margin: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* Кликабельные никнеймы авторов в обоих плеерах и карточках */
+.artist-profile-link {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.15s ease, text-decoration 0.15s ease;
+}
+
+.artist-profile-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+
+.max-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee-clone {
+  padding-left: 60px; /* Ширина пустых символов (***) между концом и началом строки */
+}
+
+.marquee-clone:empty {
+  display: none;
+}
+

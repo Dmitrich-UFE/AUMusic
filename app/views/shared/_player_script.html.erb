@@ -89,6 +89,11 @@
     document.getElementById("max-player-title").innerText = trackData.title;
     document.getElementById("max-player-artists").innerText = trackData.artists;
 
+    const cloneEl = document.getElementById("max-player-title-clone");
+    if (cloneEl) cloneEl.innerText = trackData.title;
+    renderPlayerArtists(trackData);
+    setupMaxTitleMarquee();
+
     const maxLikeCount = document.getElementById("like-count-display");
     if (maxLikeCount) maxLikeCount.innerText = trackData.likes_count;
 
@@ -157,6 +162,37 @@
   };
 
 
+
+    // Вспомогательная функция отрисовки авторов в виде ссылок
+    function renderPlayerArtists(trackData) {
+      const minArtistsEl = document.getElementById("player-artists-txt");
+      const maxArtistsEl = document.getElementById("max-player-artists");
+      let artistsList = [];
+
+      try {
+        if (trackData.artists_json) {
+          artistsList = typeof trackData.artists_json === "string" 
+            ? JSON.parse(trackData.artists_json) 
+            : trackData.artists_json;
+        }
+      } catch (e) {}
+
+      if (artistsList.length > 0) {
+        const htmlLinks = artistsList.map(a => 
+          `<a href="/user/${encodeURIComponent(a.username)}" class="artist-profile-link">${a.name}</a>`
+        ).join(", ");
+        if (minArtistsEl) minArtistsEl.innerHTML = htmlLinks;
+        if (maxArtistsEl) maxArtistsEl.innerHTML = htmlLinks;
+      } else {
+        if (minArtistsEl) minArtistsEl.innerText = trackData.artists || "";
+        if (maxArtistsEl) maxArtistsEl.innerText = trackData.artists || "";
+      }
+    }
+
+
+
+
+
   // --- ЕДИНЫЙ ГЛОБАЛЬНЫЙ ДЕЛЕГИРОВАННЫЙ ОБРАБОТЧИК КЛИКОВ ДЛЯ ВСЕХ СТРАНИЦ ---
     if (!window.auGlobalClickAttached) {
     window.auGlobalClickAttached = true;
@@ -198,6 +234,7 @@
       }
 
       // 4. Развернуть / Свернуть плеер
+            // В обработчике #btn-maximize-player:
       if (e.target.closest("#btn-maximize-player")) {
         e.preventDefault();
         const maxPlayer = document.getElementById("player-full-screen");
@@ -206,8 +243,10 @@
           maxPlayer.style.removeProperty("display");
         }
         document.body.classList.add("player-open");
+        setupMaxTitleMarquee(); // Пересчитываем ширину и запускаем бегущую строку
         return;
       }
+
 
       if (e.target.closest("#btn-minimize-player")) {
         e.preventDefault();
@@ -227,6 +266,16 @@
       }
 
       // 6. Клик по карточке трека
+      // Если кликнули по ссылке на профиль автора — позволяем Turbo перейти по ссылке, не перехватывая клик карточкой
+      if (e.target.closest(".artist-profile-link")) {
+        const maxPlayer = document.getElementById("player-full-screen");
+        if (maxPlayer && !maxPlayer.classList.contains("d-none")) {
+          maxPlayer.classList.add("d-none");
+          document.body.classList.remove("player-open");
+        }
+        return;
+      }
+
       const card = e.target.closest(".playable-track-card");
       if (card) {
         e.preventDefault();
@@ -235,11 +284,13 @@
           id: parseInt(card.getAttribute("data-id")),
           title: card.getAttribute("data-title"),
           artists: card.getAttribute("data-artists"),
+          artists_json: card.getAttribute("data-artists-json"),
           audio_url: card.getAttribute("data-audio-url"),
           cover_url: card.getAttribute("data-cover-url"),
           likes_count: parseInt(card.getAttribute("data-likes-count")) || 0,
           user_reaction: card.getAttribute("data-user-reaction")
         };
+
 
         if (!clickedTrackData.audio_url) {
           alert("У этого трека отсутствует аудиофайл.");
@@ -251,6 +302,7 @@
           id: parseInt(c.getAttribute("data-id")),
           title: c.getAttribute("data-title"),
           artists: c.getAttribute("data-artists"),
+          artists_json: card.getAttribute("data-artists-json"),
           audio_url: c.getAttribute("data-audio-url"),
           cover_url: c.getAttribute("data-cover-url"),
           likes_count: parseInt(c.getAttribute("data-likes-count")) || 0,
@@ -346,7 +398,8 @@ if (maxBuf) maxBuf.style.width = bufferedPct + "%";
       minPlayer.classList.add("d-none");
       minPlayer.style.setProperty("display", "none", "important");
       if (maxPlayer) maxPlayer.classList.add("d-none");
-    } else if (state.hasActiveTrack && state.currentTrack) {
+    } 
+    else if (state.hasActiveTrack && state.currentTrack) {
       // Возвращаем плеер на экран независимо от того, успел ли Turbo сбросить DOM
       minPlayer.classList.remove("d-none");
       minPlayer.style.setProperty("display", "flex", "important");
@@ -360,6 +413,13 @@ if (maxBuf) maxBuf.style.width = bufferedPct + "%";
         document.getElementById("max-player-cover").src = trackData.cover_url || "";
         document.getElementById("max-player-title").innerText = trackData.title;
         document.getElementById("max-player-artists").innerText = trackData.artists;
+
+        const cloneEl = document.getElementById("max-player-title-clone");
+        if (cloneEl) cloneEl.innerText = trackData.title;
+
+        renderPlayerArtists(trackData);
+        setupMaxTitleMarquee();
+
         updateReactionIcons(trackData.user_reaction);
 
         audio.src = trackData.audio_url;
@@ -384,6 +444,81 @@ if (maxBuf) maxBuf.style.width = bufferedPct + "%";
 
   document.addEventListener("DOMContentLoaded", handlePageLoad);
   document.addEventListener("turbo:load", handlePageLoad);
+
+
+//КУСОК ДЛЯ БЕГУЩЕЙ СТРОКИ НАЗВАНИЯ
+  let marqueeTimer = null;
+  let marqueeAnimFrame = null;
+
+  function stopTitleMarquee() {
+    if (marqueeTimer) clearTimeout(marqueeTimer);
+    if (marqueeAnimFrame) cancelAnimationFrame(marqueeAnimFrame);
+    const trackEl = document.getElementById("max-marquee-track");
+    if (trackEl) trackEl.style.transform = "translateX(0px)";
+  }
+
+  function setupMaxTitleMarquee() {
+    stopTitleMarquee();
+    const box = document.getElementById("max-title-marquee-box");
+    const trackEl = document.getElementById("max-marquee-track");
+    const titleEl = document.getElementById("max-player-title");
+    const cloneEl = document.getElementById("max-player-title-clone");
+    if (!box || !trackEl || !titleEl || !cloneEl) return;
+
+    const rawText = titleEl.textContent || "";
+    const trimmedText = rawText.replace(/^\s+/, ""); // Убираем пробелы в начале, чтобы первая буква была непробельной
+    titleEl.textContent = trimmedText;
+    cloneEl.textContent = "";
+
+    // Если текст помещается в одну строку — прокрутка не нужна
+    if (titleEl.offsetWidth <= box.clientWidth) return;
+
+    // Включаем копию текста для бесшовного кругового движения
+    cloneEl.textContent = trimmedText;
+
+    // Точное расстояние одного полного круга (ширина оригинала + левый отступ клона 60px)
+    const cloneStyle = window.getComputedStyle(cloneEl);
+    const gapPx = parseFloat(cloneStyle.paddingLeft) || 60;
+    const cycleDistance = titleEl.offsetWidth + gapPx;
+
+    const speedPxPerSec = 50; // Скорость движения
+    const pauseDelayMs = 2500; // Задержка в начале строки перед стартом
+
+    function runCycle() {
+      trackEl.style.transform = "translateX(0px)";
+
+      marqueeTimer = setTimeout(() => {
+        let startTime = null;
+        const durationMs = (cycleDistance / speedPxPerSec) * 1000;
+
+        function step(timestamp) {
+          if (!startTime) startTime = timestamp;
+          const elapsed = timestamp - startTime;
+          const progress = Math.min(elapsed / durationMs, 1);
+
+          // Сдвигаем трек влево до тех пор, пока первая буква клона не встанет ровно на место первой буквы оригинала
+          trackEl.style.transform = `translateX(-${progress * cycleDistance}px)`;
+
+          if (progress < 1) {
+            marqueeAnimFrame = requestAnimationFrame(step);
+          } else {
+            runCycle();
+          }
+        }
+
+        marqueeAnimFrame = requestAnimationFrame(step);
+      }, pauseDelayMs);
+    }
+
+    runCycle();
+  }
+
+
+
+
+
+
+
 
 })();
 </script>
