@@ -1,1 +1,288 @@
-<h1>Профиль пользователя <%= @user.username %></h1>
+<%= stylesheet_link_tag "profile-styles", media: "all" %>
+
+
+<header class="site-header-invisible">
+  <!-- 1. Логотип -->
+  <%= link_to root_path, class: "LogoText" do %>
+    <span class="brand-au">AU</span><span class="brand-music">Music</span>
+  <% end %>
+  
+  <!-- 2. Форма поиска музыки -->
+  <%= form_with url: "#", method: :get, class: "search-container" do |form| %>
+    <%= form.text_field :query, placeholder: "Найти пользователя, трек, плейлист...", class: "search-input" %>
+    <button type="submit" class="search-submit-btn">
+      <%= image_tag "search-icon.png", alt: "Найти", class: "search-icon" %>
+    </button>
+  <% end %>
+
+  <!-- 3. Правый блок (Авторизация / Сессия) -->
+  <% if logged_in? %>
+    <div class="header-right-block">
+      <% if current_user.can_upload_music? %>
+        <%= link_to "+", new_track_path, class: "create-music-btn", title: "Загрузить музыку" %>
+      <% end %>
+
+      <div class="user-session-block">
+  <%= link_to user_profile_path(current_user.username), class: "profile-link-area" do %>
+    <div class="header-avatar-box">
+      <% if current_user.avatar.attached? %>
+        <%= image_tag current_user.avatar, class: "header-avatar-img" %>
+      <% end %>
+    </div>
+    <span class="session-username"><%= mask_username(current_user.username) %></span>
+  <% end %>
+
+  <%= button_to "Выйти", logout_path, method: :delete, form_class: "logout-form-wrapper", class: "logout-button" %>
+</div>
+
+    </div>
+  <% else %>
+    <%= link_to "Войти", signin_path, class: "login-button" %>
+  <% end %>
+</header>
+
+
+
+<% if @is_own_profile %>
+  <!-- Заглушка для личного кабинета владельца, который сделаем следующим этапом -->
+  <div style="color: white; padding: 120px 40px;">
+    <h1>Ваш личный профиль: <%= @user.username %></h1>
+  </div>
+<% else %>
+  <div class="public-profile-page">
+    
+    <!-- Верхний баннер -->
+    <div class="profile-banner-wrapper">
+      <% if @user.banner.attached? %>
+        <%= image_tag @user.banner, class: "profile-banner-img" %>
+      <% else %>
+        <div class="profile-banner-placeholder"></div>
+      <% end %>
+      <div class="profile-banner-gradient"></div>
+    </div>
+
+    <!-- ГЛАВНЫЙ КОНТЕЙНЕР ПРОФИЛЯ (открывается здесь, а закрывается в самом конце страницы!) -->
+    <div class="profile-main-container">
+      
+      <!-- Блок шапки профиля: Имя слева, Кнопка подписки справа -->
+      <div class="profile-header-info">
+        <!-- Добавлена обертка profile-identity -->
+        <div class="profile-identity">
+          <h1 class="profile-display-name" title="<%= @user.username %>"><%= @user.username %></h1>
+          <% if @user.bio.present? %>
+            <p class="profile-bio"><%= @user.bio %></p>
+          <% end %>
+        </div>
+
+        <div class="profile-subscribe-area">
+          <% if logged_in? %>
+            <button type="button" 
+                    class="btn-subscribe <%= @is_subscribed ? 'subscribed' : '' %>" 
+                    id="subscribe-toggle-btn"
+                    data-url="<%= toggle_subscription_path(@user.username) %>">
+              <span class="sub-btn-text"><%= @is_subscribed ? "Вы подписаны" : "Подписаться" %></span>
+              <span class="sub-btn-count" id="sub-count-label">
+                <%= format_subscribers_count(@user.subscribers.count) %>
+              </span>
+            </button>
+          <% else %>
+            <%= link_to signin_path, class: "btn-subscribe" do %>
+              <span class="sub-btn-text">Подписаться</span>
+              <span class="sub-btn-count"><%= format_subscribers_count(@user.subscribers.count) %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- РАЗДЕЛ 1: АЛЬБОМЫ (находится ВНУТРИ profile-main-container) -->
+      <% if @albums.any? %>
+        <section class="profile-media-section" data-carousel-section>
+          <div class="section-header-row">
+            <h2 class="profile-section-title">Альбомы</h2>
+            <div class="carousel-nav-arrows d-none" data-carousel-arrows>
+              <button type="button" class="carousel-arrow-btn" data-dir="prev">&lt;</button>
+              <button type="button" class="carousel-arrow-btn" data-dir="next">&gt;</button>
+            </div>
+          </div>
+
+          <div class="horizontal-media-track" data-carousel-track>
+            <% @albums.each do |album| %>
+              <div class="media-carousel-card" data-public-uid="<%= album.public_uid %>">
+                <div class="media-card-cover-box">
+                  <% if album.cover.attached? %>
+                    <%= image_tag album.cover, class: "media-card-img" %>
+                  <% else %>
+                    <div class="media-card-empty"></div>
+                  <% end %>
+                </div>
+                <div class="media-card-title" title="<%= album.title %>"><%= album.title %></div>
+                <div class="media-card-year"><%= album.created_at.year %></div>
+              </div>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+
+      <!-- РАЗДЕЛ 2: СИНГЛЫ (находится ВНУТРИ profile-main-container) -->
+      <% if @singles.any? %>
+        <section class="profile-media-section" data-carousel-section>
+          <div class="section-header-row">
+            <h2 class="profile-section-title">Синглы</h2>
+            <div class="carousel-nav-arrows d-none" data-carousel-arrows>
+              <button type="button" class="carousel-arrow-btn" data-dir="prev">&lt;</button>
+              <button type="button" class="carousel-arrow-btn" data-dir="next">&gt;</button>
+            </div>
+          </div>
+
+          <div class="horizontal-media-track" data-carousel-track>
+            <% @singles.each do |track| %>
+              <div class="media-carousel-card playable-track-card"
+                   data-id="<%= track.id %>"
+                   data-title="<%= track.title %>"
+                   data-artists="<%= track.artists.map(&:name).join(', ') %>"
+                   data-audio-url="<%= track.audio.attached? ? rails_blob_path(track.audio, only_path: true) : '' %>"
+                   data-cover-url="<%= track.cover.attached? ? rails_blob_path(track.cover, only_path: true) : '' %>"
+                   data-likes-count="<%= track.likes_count %>"
+                   data-user-reaction="<%= logged_in? ? current_user.reactions.find_by(track: track)&.kind : '' %>"
+                   data-public-uid="<%= track.public_uid %>">
+                <div class="media-card-cover-box">
+                  <% if track.cover.attached? %>
+                    <%= image_tag track.cover, class: "media-card-img" %>
+                  <% else %>
+                    <div class="media-card-empty"></div>
+                  <% end %>
+                </div>
+                <div class="media-card-title" title="<%= track.title %>"><%= track.title %></div>
+                <div class="media-card-year"><%= track.created_at.year %></div>
+              </div>
+            <% end %>
+          </div>
+
+        </section>
+      <% end %>
+
+      <!-- РАЗДЕЛ 3: ПЛЕЙЛИСТЫ (находится ВНУТРИ profile-main-container) -->
+      <% if @playlists.any? %>
+        <section class="profile-media-section" data-carousel-section>
+          <div class="section-header-row">
+            <h2 class="profile-section-title">Плейлисты пользователя <%= @user.username %></h2>
+            <div class="carousel-nav-arrows d-none" data-carousel-arrows>
+              <button type="button" class="carousel-arrow-btn" data-dir="prev">&lt;</button>
+              <button type="button" class="carousel-arrow-btn" data-dir="next">&gt;</button>
+            </div>
+          </div>
+
+          <div class="horizontal-media-track" data-carousel-track>
+            <% @playlists.each do |playlist| %>
+              <div class="media-carousel-card" data-public-uid="<%= playlist.public_uid %>">
+                <div class="media-card-cover-box">
+                  <% if playlist.cover.attached? %>
+                    <%= image_tag playlist.cover, class: "media-card-img" %>
+                  <% else %>
+                    <div class="media-card-empty"></div>
+                  <% end %>
+                </div>
+                <div class="media-card-title" title="<%= playlist.name %>"><%= playlist.name %></div>
+              </div>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+
+    </div> <!-- КОНЕЦ .profile-main-container -->
+  </div> <!-- КОНЕЦ .public-profile-page -->
+
+  
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. ЛОГИКА КНОПКИ ПОДПИСКИ
+    const subBtn = document.getElementById("subscribe-toggle-btn");
+    if (subBtn) {
+      subBtn.addEventListener("click", () => {
+        const url = subBtn.getAttribute("data-url");
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          const textEl = subBtn.querySelector(".sub-btn-text");
+          const countEl = document.getElementById("sub-count-label");
+
+          if (data.subscribed) {
+            subBtn.classList.add("subscribed");
+            textEl.innerText = "Вы подписаны";
+          } else {
+            subBtn.classList.remove("subscribed");
+            textEl.innerText = "Подписаться";
+          }
+
+          if (countEl) {
+            countEl.innerText = formatSubscribersJS(data.subscribers_count);
+          }
+        });
+
+      });
+    }
+
+    function formatSubscribersJS(num) {
+      if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + " млрд.";
+      if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + " млн.";
+      if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + " тыс.";
+      return num.toString();
+    }
+
+    // 2. УМНЫЕ ГОРИЗОНТАЛЬНЫЕ КАРУСЕЛИ С ШАГОМ (ВИДИМЫЕ - 1)
+    const sections = document.querySelectorAll("[data-carousel-section]");
+
+    sections.forEach(section => {
+      const track = section.querySelector("[data-carousel-track]");
+      const arrowsBox = section.querySelector("[data-carousel-arrows]");
+      const prevBtn = section.querySelector('[data-dir="prev"]');
+      const nextBtn = section.querySelector('[data-dir="next"]');
+      const cards = track.querySelectorAll(".media-carousel-card");
+
+      if (!track || cards.length === 0) return;
+
+      function updateCarouselControls() {
+        // Проверяем, выходят ли карточки за пределы видимой ширины
+        if (track.scrollWidth > track.clientWidth + 5) {
+          arrowsBox.classList.remove("d-none");
+        } else {
+          arrowsBox.classList.add("d-none");
+        }
+      }
+
+      function scrollCarousel(direction) {
+        const cardStyle = window.getComputedStyle(cards[0]);
+        const trackStyle = window.getComputedStyle(track);
+        const cardWidth = cards[0].offsetWidth;
+        const gap = parseFloat(trackStyle.gap) || 25;
+        const stepUnit = cardWidth + gap;
+
+        // Считаем сколько объектов целиком помещается на экране
+        const visibleCount = Math.max(2, Math.floor((track.clientWidth + gap) / stepUnit));
+        // Шаг прокрутки = (кол-во видимых объектов - 1)
+        const scrollItems = visibleCount - 1;
+        const scrollDistance = scrollItems * stepUnit;
+
+        track.scrollBy({
+          left: direction === "next" ? scrollDistance : -scrollDistance,
+          behavior: "smooth"
+        });
+      }
+
+      prevBtn.addEventListener("click", () => scrollCarousel("prev"));
+      nextBtn.addEventListener("click", () => scrollCarousel("next"));
+
+      // Пересчитываем видимость стрелок при загрузке и изменении размера окна
+      updateCarouselControls();
+      window.addEventListener("resize", updateCarouselControls);
+    });
+  });
+  </script>
+<% end %>

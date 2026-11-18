@@ -1,6 +1,6 @@
 <% tracks.each do |track| %>
   <!-- Добавили класс playable-track-card и data-аттрибуты для передачи данных в JS -->
-    <div class="track-card playable-track-card" 
+    <div class="media-carousel-card track-card playable-track-card" 
        data-id="<%= track.id %>"
        data-title="<%= track.title %>"
        data-artists="<%= track.artists.map(&:name).join(', ') %>"
@@ -9,6 +9,7 @@
        data-likes-count="<%= track.likes_count %>"
        data-user-reaction="<%= logged_in? ? current_user.reactions.find_by(track: track)&.kind : '' %>"
        style="cursor: pointer;">
+       <!-- data-public-uid="<%= track.public_uid %>"> -->
        <!-- Делаем карточку кликабельной -->
        
     <div class="track-cover-wrapper">

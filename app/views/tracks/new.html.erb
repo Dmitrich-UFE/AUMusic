@@ -145,7 +145,12 @@
 
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("turbo:load", () => {
+  // Проверяем, что мы действительно на странице загрузки трека, чтобы скрипт не запускался на других страницах
+  const musicForm = document.getElementById("music-form");
+  if (!musicForm || musicForm.dataset.initialized === "true") return;
+  musicForm.dataset.initialized = "true";
+
   // --- ЭЛЕМЕНТЫ СТРАНИЦЫ ЗАГРУЗКИ ---
   const submitBtn = document.getElementById("submit-track-btn");
   const descriptionInput = document.querySelector(".textarea-input");
@@ -441,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // --- УПРАВЛЕНИЕ ВИДИМОСТЬЮ И ПОДТВЕРЖДЕНИЕМ ПУБЛИКАЦИИ ---
-  const musicForm = document.getElementById("music-form");
+  //const musicForm = document.getElementById("music-form");
   const visibilityTrigger = document.getElementById("visibility-trigger");
   const visibilityMenu = document.getElementById("visibility-menu");
   const visibilityLabel = document.getElementById("visibility-label");

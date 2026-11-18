@@ -1,0 +1,301 @@
+/* Базовый фон страницы */
+body {
+  background-color: #2D4059 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Merriweather', serif !important;
+  color: #FFFFFF !important;
+}
+
+/* Прозрачная градиентная шапка поверх баннера */
+.site-header-invisible {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: linear-gradient(to bottom, rgba(32, 48, 64, 0.7) 70%, rgba(32, 48, 64, 0) 100%) !important;
+  z-index: 1000 !important;
+  height: 100px !important;
+}
+
+/* Разрываем зависимость от родительских flex/grid контейнеров из application.html.erb */
+.public-profile-page {
+  display: block !important;
+  width: 100vw !important;
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 0 120px 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* --- БАННЕР С ГРАДИЕНТНЫМ ПЕРЕХОДОМ В ФОН --- */
+.profile-banner-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  height: 260px !important;
+  overflow: hidden !important;
+  background-color: #203040 !important;
+}
+
+.profile-banner-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.profile-banner-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(135deg, #243447 0%, #1c2838 100%) !important;
+}
+
+.profile-banner-gradient {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 150px !important;
+  background: linear-gradient(to bottom, rgba(45, 64, 89, 0) 0%, #2D4059 100%) !important;
+  pointer-events: none !important;
+}
+
+/* --- ГЛАВНЫЙ КОНТЕЙНЕР: ЗАДАЕТ ЕДИНУЮ ЛЕВУЮ И ПРАВУЮ ГРАНИЦУ --- */
+.profile-main-container {
+  display: block !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  margin: -50px auto 0 auto !important;
+  padding: 0 40px !important;
+  position: relative !important;
+  z-index: 10 !important;
+  box-sizing: border-box !important;
+}
+
+/* --- ШАПКА ПРОФИЛЯ: ИМЯ СЛЕВА, КНОПКА ПОДПИСКИ СПРАВА --- */
+.profile-header-info {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 30px !important;
+  margin-bottom: 50px !important;
+  box-sizing: border-box !important;
+}
+
+.profile-identity {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.profile-display-name {
+  font-family: 'Merriweather', serif !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: #F07B3F !important;
+  margin: 0 0 12px 0 !important;
+  line-height: 1.2 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: break-word !important;
+}
+
+.profile-bio {
+  font-family: 'Merriweather', serif !important;
+  font-size: 16px !important;
+  color: #FFD460 !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+  max-width: 650px !important;
+  white-space: pre-line !important;
+  word-break: break-word !important;
+}
+
+.profile-subscribe-area {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+/* --- КНОПКА ПОДПИСКИ --- */
+.btn-subscribe {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  height: 54px !important;
+  padding: 0 32px !important;
+  background-color: #EA5455 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 27px !important;
+  font-family: 'Merriweather', serif !important;
+  font-size: 20pt !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background-color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.btn-subscribe:hover {
+  opacity: 0.92 !important;
+}
+
+.btn-subscribe.subscribed {
+  background-color: #203040 !important;
+}
+
+.sub-btn-count {
+  font-size: 16pt !important;
+  font-weight: 400 !important;
+  opacity: 0.95 !important;
+}
+
+/* --- РАЗДЕЛЫ И ГОРИЗОНТАЛЬНЫЕ КАРУСЕЛИ --- */
+.profile-media-section {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 50px !important;
+  box-sizing: border-box !important;
+}
+
+.section-header-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-bottom: 20px !important;
+}
+
+.profile-section-title {
+  font-family: 'Merriweather', serif !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: #F07B3F !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.carousel-nav-arrows {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.carousel-arrow-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background-color: #203040 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-family: 'Merriweather', serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.carousel-arrow-btn:hover {
+  background-color: #2b4056 !important;
+  color: #FFD460 !important;
+}
+
+.horizontal-media-track {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 25px !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-behavior: smooth !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.horizontal-media-track::-webkit-scrollbar {
+  display: none !important;
+}
+
+.media-carousel-card {
+  width: 170px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  cursor: pointer !important;
+}
+
+.media-card-cover-box {
+  width: 170px !important;
+  height: 170px !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background-color: #FFFFFF !important;
+  margin-bottom: 12px !important;
+}
+
+.media-card-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.media-card-empty {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #FFFFFF !important;
+}
+
+.media-card-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #FFD460 !important;
+  line-height: 1.25 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: break-word !important;
+  margin-bottom: 4px !important;
+}
+
+.media-card-year {
+  font-size: 13px !important;
+  color: #F07B3F !important;
+}
+
+.d-none {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .profile-header-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .profile-subscribe-area {
+    margin-left: 0 !important;
+  }
+  .btn-subscribe {
+    font-size: 16pt !important;
+  }
+  .sub-btn-count {
+    font-size: 12pt !important;
+  }
+}

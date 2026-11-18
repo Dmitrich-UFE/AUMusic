@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_201458) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,7 +57,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
     t.bigint "artist_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "public_uid"
+    t.string "visibility", default: "private", null: false
     t.index ["artist_id"], name: "index_albums_on_artist_id"
+    t.index ["public_uid"], name: "index_albums_on_public_uid", unique: true
   end
 
   create_table "artists", force: :cascade do |t|
@@ -95,6 +98,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "visibility", default: "private", null: false
+    t.bigint "public_uid"
+    t.index ["public_uid"], name: "index_playlists_on_public_uid", unique: true
     t.index ["user_id"], name: "index_playlists_on_user_id"
   end
 
@@ -109,6 +114,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
     t.index ["user_id"], name: "index_reactions_on_user_id"
   end
 
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "subscriber_id", null: false
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_subscriptions_on_author_id"
+    t.index ["subscriber_id", "author_id"], name: "index_subscriptions_on_subscriber_id_and_author_id", unique: true
+    t.index ["subscriber_id"], name: "index_subscriptions_on_subscriber_id"
+  end
+
   create_table "track_artists", force: :cascade do |t|
     t.bigint "track_id", null: false
     t.bigint "artist_id", null: false
@@ -121,12 +136,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
   create_table "tracks", force: :cascade do |t|
     t.string "title"
     t.integer "duration"
-    t.string "album"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "description"
     t.string "visibility", default: "private", null: false
     t.bigint "user_id", null: false
+    t.bigint "public_uid"
+    t.bigint "album_id"
+    t.index ["album_id"], name: "index_tracks_on_album_id"
+    t.index ["public_uid"], name: "index_tracks_on_public_uid", unique: true
     t.index ["user_id"], name: "index_tracks_on_user_id"
   end
 
@@ -137,6 +155,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "role"
+    t.string "bio"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -152,7 +171,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_113642) do
   add_foreign_key "playlists", "users"
   add_foreign_key "reactions", "tracks"
   add_foreign_key "reactions", "users"
+  add_foreign_key "subscriptions", "users", column: "author_id"
+  add_foreign_key "subscriptions", "users", column: "subscriber_id"
   add_foreign_key "track_artists", "artists"
   add_foreign_key "track_artists", "tracks"
+  add_foreign_key "tracks", "albums"
   add_foreign_key "tracks", "users"
 end

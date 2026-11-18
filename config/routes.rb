@@ -22,4 +22,6 @@ Rails.application.routes.draw do
   get "/users/search", to: "sessions#search_users", as: "search_users"
   post "/tracks/:track_id/reactions/toggle", to: "reactions#toggle", as: "toggle_track_reaction"
   get "/user/:username", to: "users#show", as: "user_profile"
+  post "/user/:username/subscribe", to: "subscriptions#toggle", as: "toggle_subscription"
+
 end

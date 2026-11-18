@@ -3,6 +3,7 @@ class User < ApplicationRecord
   # но оставляем само хэширование, чтобы написать кастомную русскую валидацию
   has_secure_password validations: false
   has_one_attached :avatar
+  has_one_attached :banner
 
   validates :username, presence: { message: "Никнейм не может быть пустым" },
                        uniqueness: { message: "Этот никнейм уже занят" },
@@ -31,8 +32,22 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :reactions, dependent: :destroy
 
-  has_many :tracks, dependent: :destroy 
+
+  has_many :tracks, dependent: :destroy
+  has_one :artist, dependent: :destroy
+  has_many :albums, through: :artist
   has_many :playlists, dependent: :destroy
+
+  # Подписки
+  has_many :active_subscriptions, class_name: "Subscription", foreign_key: "subscriber_id", dependent: :destroy
+  has_many :passive_subscriptions, class_name: "Subscription", foreign_key: "author_id", dependent: :destroy
+  has_many :subscribers, through: :passive_subscriptions, source: :subscriber
+
+  validates :bio, length: { maximum: 200 }, allow_blank: true
+
+  def subscribed_to?(other_user)
+    active_subscriptions.exists?(author_id: other_user.id)
+  end
 
   # Связь для музыканта (у музыканта может быть профиль его группы/артиста)
   has_one :artist, dependent: :destroy

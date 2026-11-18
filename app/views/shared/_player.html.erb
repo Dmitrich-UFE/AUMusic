@@ -1,0 +1,111 @@
+<audio id="audio-core" preload="auto" data-turbo-permanent></audio>
+
+<!-- ========================================== -->
+<!-- 1. СВЕРНУТЫЙ ПЛЕЕР (ПОСТОЯННЫЙ В DOM) -->
+<!-- ========================================== -->
+<div id="au-player-minimized-container" class="d-none" data-turbo-permanent
+     data-img-like="<%= asset_path('like_icon.png') %>"
+     data-img-like-confirmed="<%= asset_path('like_confirmed_icon.png') %>"
+     data-img-dislike="<%= asset_path('dislike_icon.png') %>"
+     data-img-dislike-confirmed="<%= asset_path('dislike_confirmed_icon.png') %>"
+     data-img-min-play="<%= asset_path('play_icon.png') %>"
+     data-img-min-pause="<%= asset_path('pause_icon.png') %>">
+
+  <div class="player-progress-area" id="progress-timeline">
+    <div class="player-buffered-bar" id="progress-buffered"></div>
+    <div class="player-progress-bar" id="progress-current"></div>
+    <div class="player-progress-pin" id="progress-pin"></div>
+  </div>
+
+  <div class="player-min-panel">
+    <!-- В свернутом плеере (.player-ctrl-group) -->
+    <div class="player-ctrl-group">
+      <button type="button" class="player-btn js-player-prev">
+        <%= image_tag "prev_track.png", alt: "Prev" %>
+      </button>
+      <button type="button" class="player-btn btn-main-play" id="btn-play-toggle">
+        <%= image_tag "play_icon.png", alt: "Play", id: "img-play-state" %>
+      </button>
+      <button type="button" class="player-btn js-player-next">
+        <%= image_tag "next_track.png", alt: "Next" %>
+      </button>
+      <div class="player-time-display"><span id="time-current">0:00</span> / <span id="time-duration">0:00</span></div>
+    </div>
+
+    <div class="player-center-info horizontal-capsule">
+      <img src="" alt="" class="player-min-cover" id="player-cover-img">
+      <div class="player-text-block">
+        <div class="player-track-title" id="player-title-txt">Название</div>
+        <div class="player-track-artists" id="player-artists-txt">Авторы</div>
+      </div>
+      <!-- В свернутом плеере (.player-min-reactions-group) -->
+      <div class="player-min-reactions-group">
+        <button type="button" class="player-btn js-player-like" id="min-like-btn"><%= image_tag "like_icon.png" %></button>
+        <button type="button" class="player-btn js-player-dislike" id="min-dislike-btn"><%= image_tag "dislike_icon.png" %></button>
+      </div>
+    </div>
+
+    <div class="player-right-group">
+      <button type="button" class="player-btn open-panel-trigger" id="btn-maximize-player"><%= image_tag "open_panel_icon.png" %></button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 2. РАЗВЕРНУТЫЙ ПЛЕЕР (ПОСТОЯННЫЙ В DOM) -->
+<!-- ========================================== -->
+<div id="player-full-screen" class="player-max-panel d-none" data-turbo-permanent
+     data-img-play="<%= asset_path('play_icon.png') %>"
+     data-img-pause="<%= asset_path('pause_icon.png') %>">
+
+  <button type="button" class="max-player-header-bg-btn" id="btn-minimize-player" title="Свернуть панель">
+    <%= image_tag "close_panel_icon.png", class: "close-panel-arrow", alt: "Свернуть" %>
+  </button>
+
+  <div class="max-player-layout">
+    <div class="max-cover-box">
+      <img src="" alt="" id="max-player-cover">
+    </div>
+
+    <div class="max-info-box">
+      <h2 class="max-track-title" id="max-player-title">Название</h2>
+      <div class="max-track-artists" id="max-player-artists">Авторы</div>
+
+      <div class="max-actions-fixed-row">
+        <button type="button" class="carousel-item-btn like-stat js-player-like" id="max-like-btn">
+          <%= image_tag "like_icon.png" %> <span id="like-count-display">0</span>
+        </button>
+        <button type="button" class="carousel-item-btn dislike-stat js-player-dislike" id="max-dislike-btn">
+          <%= image_tag "dislike_icon.png" %>
+        </button>
+        <button type="button" class="carousel-item-btn comment-star" id="max-comment-btn">
+          <%= image_tag "comments_icon.png" %> <span id="comment-count-display">0</span>
+        </button>
+        <button type="button" class="carousel-item-btn options-stat" id="max-options-btn">
+          <%= image_tag "point3_icon.png", alt: "Опции" %>
+        </button>
+      </div>
+
+
+      <div class="max-timeline-wrapper">
+        <div class="max-progress-area" id="max-progress-timeline">
+          <div class="max-buffered-bar" id="max-player-buffered"></div>
+          <div class="max-progress-bar" id="max-progress-current"></div>
+        </div>
+        <div class="max-time-labels">
+          <span id="max-time-current">0:00</span>
+          <span id="max-time-duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- И в нижнем пульте (.max-controls-row) -->
+      <div class="max-controls-row">
+        <button type="button" class="player-btn max-nav-btn js-player-prev"><%= image_tag "prev_track.png" %></button>
+        <button type="button" class="player-btn max-play-big" id="max-btn-play-toggle"><%= image_tag "play_icon.png" %></button>
+        <button type="button" class="player-btn max-nav-btn js-player-next"><%= image_tag "next_track.png" %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+

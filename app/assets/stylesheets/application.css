@@ -35,6 +35,22 @@ body {
   height: 100px;
 }
 
+
+.site-header-invisible {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #2d405900;
+  z-index: 1000;
+  height: 100px;
+}
+
 .LogoText {
   font-family: 'Idiqlat', sans-serif;
   font-size: 36pt; 
@@ -281,19 +297,20 @@ body {
 
 /* --- СВЕРНУТЫЙ ПЛЕЕР: НАДЕЖНАЯ СЕТКА --- */
 /* --- СВЕРНУТЫЙ ПЛЕЕР: ПРИНУДИТЕЛЬНОЕ ЗАКРЕПЛЕНИЕ К ЭКРАНУ --- */
+/*
 #au-player-minimized-container {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
   width: 100vw !important;
-  height: 80px !important; /* Жестко фиксируем высоту всего контейнера плеера */
+  height: 80px !important; /* Жестко фиксируем высоту всего контейнера плеера 
   background-color: #203040 !important;
   z-index: 999999 !important;
   box-sizing: border-box;
-  display: none !important; /* Управляется через JS */
+  display: none !important; /* Управляется через JS 
   flex-direction: column !important; /* Шкала сверху, панель снизу */
-  /*box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.4);*/
+  /*box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.4);
 }
 
 
@@ -322,7 +339,7 @@ body {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  height: 74px !important; /* Оставшаяся высота плеера */
+  height: 74px !important; /* Оставшаяся высота плеера 
   width: 100% !important;
   padding: 0 30px !important;
   box-sizing: border-box !important;
@@ -361,30 +378,30 @@ body {
 .player-center-info.horizontal-capsule {
   display: flex !important;
   align-items: center !important;
-  gap: 20px !important; /* Увеличили расстояние для гармоничного размещения */
+  gap: 20px !important; /* Увеличили расстояние для гармоничного размещения 
   position: absolute !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  max-width: 55% !important; /* Немного расширили макс-ширину капсулы */
+  max-width: 55% !important; /* Немного расширили макс-ширину капсулы 
   height: 56px !important;
   background-color: #203040 !important;
-  padding: 0 15px 0 8px !important; /* Выровняли боковые отступы */
+  padding: 0 15px 0 8px !important; /* Выровняли боковые отступы 
   border-radius: 30px !important;
   box-sizing: border-box !important;
 }
 
-/* Группа лайков внутри капсулы справа от текста */
+/* Группа лайков внутри капсулы справа от текста 
 .player-min-reactions-group {
   display: flex !important;
   align-items: center !important;
-  gap: 16px !important; /* Небольшой отступ между лайком и дизлайком */
-  margin-left: auto; /* Прижимает блок реакций к правому краю капсулы */
+  gap: 16px !important; /* Небольшой отступ между лайком и дизлайком 
+  margin-left: auto; /* Прижимает блок реакций к правому краю капсулы 
   padding-left: 10px;
-  border-left: 2px solid rgba(255, 255, 255, 0.1); /* Легкий визуальный разделитель */
+  border-left: 2px solid rgba(255, 255, 255, 0.1); /* Легкий визуальный разделитель 
 }
 
-/* Фиксируем размер иконок лайков в свернутом плеере */
+/* Фиксируем размер иконок лайков в свернутом плеере 
 .player-min-reactions-group .player-btn img {
   height: 30px !important;
   width: auto !important;
@@ -409,7 +426,7 @@ body {
 .player-track-title { color: #FFD460; font-family: 'Merriweather', serif; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 .player-track-artists { color: #F07B3F; font-family: 'Merriweather', serif; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
 
-/* Развернутый плеер */
+/* Развернутый плеер 
 .player-max-panel {
   position: fixed !important;
   top: 0 !important;
@@ -431,14 +448,14 @@ body.player-open { overflow: hidden !important; height: 100vh !important; }
   background-color: #203040 !important; display: flex; align-items: center; justify-content: flex-end; padding-right: 40px; box-sizing: border-box; z-index: 100;
 } */
 
-/* --- ОБНОВЛЕННАЯ СТРЕЛКА И КЛИКАБЕЛЬНАЯ ШАПКА #203040 --- */
+/* --- ОБНОВЛЕННАЯ СТРЕЛКА И КЛИКАБЕЛЬНАЯ ШАПКА #203040 --- *
 .max-player-header-bg-btn {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
   width: 100% !important;
   height: 90px !important;
-  background-color: #203040 !important; /* Фоновый цвет верхней полосы */
+  background-color: #203040 !important; /* Фоновый цвет верхней полосы 
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
@@ -451,7 +468,7 @@ body.player-open { overflow: hidden !important; height: 100vh !important; }
 }
 
 .max-player-header-bg-btn:hover {
-  background-color: #152535 !important; /* Легкое подсвечивание при наведении на полосу */
+  background-color: #152535 !important; /* Легкое подсвечивание при наведении на полосу 
 }
 
 .close-panel-arrow {
@@ -499,7 +516,7 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
 */
 
 /* --- СЕКЦИЯ ФИКСИРОВАННЫХ КНОПОК ДЕЙСТВИЙ (ВМЕСТО КАРУСЕЛИ) --- */
-/* --- РАСПРЕДЕЛЕНИЕ ШИРИНЫ КНОПОК ДЕЙСТВИЙ --- */
+/* --- РАСПРЕДЕЛЕНИЕ ШИРИНЫ КНОПОК ДЕЙСТВИЙ --- 
 .max-actions-fixed-row {
   display: flex !important;
   flex-direction: row !important;
@@ -529,31 +546,31 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
   box-sizing: border-box !important;
 }
 
-/* Кнопки Лайка и Комментариев (Увеличены на ~35% за счет коэффициента flex) */
+/* Кнопки Лайка и Комментариев (Увеличены на ~35% за счет коэффициента flex) 
 .carousel-item-btn.like-stat,
 .carousel-item-btn.comment-star {
-  flex: 1.35 !important; /* Получают больше пространства под цифры */
+  flex: 1.35 !important; /* Получают больше пространства под цифры 
   padding: 0 15px !important;
 }
 
-/* Кнопки Дизлайка и Троеточия (Уменьшены на ~35%) */
+/* Кнопки Дизлайка и Троеточия (Уменьшены на ~35%) 
 .carousel-item-btn.dislike-stat,
 .carousel-item-btn.options-stat {
-  flex: 0.65 !important; /* Сужаются, так как счетчиков внутри нет */
+  flex: 0.65 !important; /* Сужаются, так как счетчиков внутри нет 
   padding: 0 !important;
 }
 
-/* Иконки внутри кнопок остаются аккуратными */
+/* Иконки внутри кнопок остаются аккуратными 
 .carousel-item-btn img {
   height: 40px !important;
   width: auto !important;
   object-fit: contain !important;
 }
 
-/* Ползунок в развернутом режиме */
+/* Ползунок в развернутом режиме 
 .max-timeline-wrapper { 
   width: 100% !important; 
-  max-width: 500px; /* Синхронизируем лимиты ширины с кнопками */
+  max-width: 500px; /* Синхронизируем лимиты ширины с кнопками 
   margin-bottom: 35px !important; 
 }
 
@@ -571,7 +588,7 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
 .max-time-labels { display: flex !important; justify-content: space-between !important; 
   color: #FFFFFF !important; font-size: 16px !important; margin-top: 8px !important; }
 
-/* Пульт управления под таймлайном */
+/* Пульт управления под таймлайном 
 .max-controls-row { 
   display: flex !important; 
   align-items: center !important; 
@@ -581,13 +598,13 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
   max-width: 500px;
 }
 
-/* Кнопки Назад и Вперед увеличены в 1.5 раза */
+/* Кнопки Назад и Вперед увеличены в 1.5 раза 
 .max-nav-btn img { 
-  height: 65px !important; /* 48px * 1.5 = 72px */
+  height: 65px !important; /* 48px * 1.5 = 72px 
   width: auto !important;
 }
 
-/* Кнопка Плей/Пауза большая */
+/* Кнопка Плей/Пауза большая 
 .max-play-big img { 
   height: 80px !important; 
   width: auto !important;
@@ -600,3 +617,5 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
   .max-cover-box { width: 260px; height: 260px; }
   .max-actions-fixed-row, .max-timeline-wrapper, .max-controls-row { max-width: 100%; }
 }
+
+*/

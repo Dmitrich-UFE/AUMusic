@@ -44,4 +44,18 @@ class Track < ApplicationRecord
   validates :description, presence: true, length: { maximum: 150 }
   validates :cover, presence: true
   validates :audio, presence: true
+
+
+
+  before_create :generate_public_uid
+
+  private
+
+  def generate_public_uid
+    loop do
+      self.public_uid = rand(10000..999999999)
+      break unless self.class.exists?(public_uid: public_uid)
+    end
+  end
+
 end
