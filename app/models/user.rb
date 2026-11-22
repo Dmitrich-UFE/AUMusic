@@ -31,6 +31,7 @@ class User < ApplicationRecord
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :reactions, dependent: :destroy
+  has_many :comment_likes, dependent: :destroy
 
 
   has_many :tracks, dependent: :destroy

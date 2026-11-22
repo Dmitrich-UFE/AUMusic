@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_201458) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_103328) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -72,12 +72,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_201458) do
     t.index ["user_id"], name: "index_artists_on_user_id"
   end
 
+  create_table "comment_likes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "comment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comment_id"], name: "index_comment_likes_on_comment_id"
+    t.index ["user_id", "comment_id"], name: "index_comment_likes_on_user_id_and_comment_id", unique: true
+    t.index ["user_id"], name: "index_comment_likes_on_user_id"
+  end
+
   create_table "comments", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "track_id", null: false
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "parent_id"
+    t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["track_id"], name: "index_comments_on_track_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
@@ -164,6 +176,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_201458) do
   add_foreign_key "album_artists", "artists"
   add_foreign_key "albums", "artists"
   add_foreign_key "artists", "users"
+  add_foreign_key "comment_likes", "comments"
+  add_foreign_key "comment_likes", "users"
+  add_foreign_key "comments", "comments", column: "parent_id"
   add_foreign_key "comments", "tracks"
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "tracks"

@@ -24,4 +24,11 @@ Rails.application.routes.draw do
   get "/user/:username", to: "users#show", as: "user_profile"
   post "/user/:username/subscribe", to: "subscriptions#toggle", as: "toggle_subscription"
 
+  resources :tracks, only: [:new, :create, :show] do
+    post "reactions/toggle", to: "reactions#toggle"
+    resources :comments, only: [:index, :create]
+  end
+  #post "/comments/:id/like", to: "comments#toggle_like", as: "toggle_comment_like"
+  resources :comments, only: [:destroy]
+  post "/comments/:id/toggle_like", to: "comments#toggle_like", as: "toggle_comment_like"
 end

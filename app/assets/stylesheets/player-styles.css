@@ -182,11 +182,491 @@ body.player-open { overflow: hidden !important; height: 100vh !important; }
   width: auto !important;
   object-fit: contain !important;
 }
-.max-player-layout { display: flex; align-items: center; justify-content: center; margin: auto; gap: 60px; width: 100%; max-width: 1000px; }
+
+
+/* --- ДВУХКОЛОНОЧНЫЙ МАКЕТ РАЗВЕРНУТОГО ПЛЕЕРА --- */
+.max-player-layout {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: auto !important;
+  gap: 60px !important;
+  width: 100% !important;
+  max-width: 1120px !important;
+  height: calc(100vh - 160px) !important;
+  box-sizing: border-box !important;
+}
+
+.max-left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 35px;
+  flex-shrink: 0;
+}
+
+.max-right-column {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 560px;
+  height: 100%;
+  max-height: 810px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+/* --- ПАНЕЛЬ КОММЕНТАРИЕВ --- */
+.max-comments-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 810px; /* Увеличено в 1.5 раза (540px * 1.5) */
+  max-height: calc(100vh - 130px);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+
+/* Шапка комментариев (зеленая зона на схеме) */
+.comments-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #203040;
+  border-radius: 18px;
+  height: 64px;
+  padding: 0 20px;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.comments-header-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.comments-header-icon-btn:hover {
+  opacity: 0.8;
+}
+
+.comments-header-icon-btn img {
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+}
+
+.comments-header-center {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.comments-header-title {
+  font-family: 'Merriweather', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFD460;
+}
+
+.comments-header-count {
+  font-family: 'Merriweather', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFD460;
+}
+
+/* Основная область списка + нижней строки (красная зона на схеме) */
+.comments-body-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* Позволяет списку сжиматься при росте textarea вверх */
+  width: 100%;
+}
+
+.comments-scroll-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #203040 transparent;
+}
+
+.comments-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-scroll-list::-webkit-scrollbar-thumb {
+  background-color: #203040;
+  border-radius: 3px;
+}
+
+/* --- КАРТОЧКА КОММЕНТАРИЯ И ОТВЕТА --- */
+.comment-thread-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Подложки комментариев и ответов цвета #203040 */
+.comment-card,
+.comment-item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background-color: #203040 !important;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.comment-item-card.is-reply {
+  width: calc(100% - 38px);
+  margin-left: 38px;
+}
+
+/* Отступ левой границы для ответов; правая граница совпадает с основным комментарием */
+.comment-replies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.comment-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-content-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+/* Никнейм оранжевый */
+.comment-author-link {
+  font-family: 'Merriweather', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F07B3F !important;
+  text-decoration: none;
+}
+
+.comment-author-link:hover {
+  text-decoration: underline;
+}
+
+/* Время назад цвета #b0b0b0 */
+.comment-time-txt,
+.comment-time-label {
+  font-family: 'Merriweather', serif;
+  font-size: 11px;
+  color: #b0b0b0 !important;
+}
+
+.comment-body-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.comment-body-text.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3; /* Стандартное свойство для устранения предупреждения редактора */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Текст комментария белый */
+.comment-body-text,
+.comment-text {
+  font-family: 'Merriweather', serif;
+  font-size: 14px;
+  color: #FFFFFF !important;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Ограничение до 3 строк с троеточием */
+.comment-text.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comment-expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F07B3F;
+  cursor: pointer;
+}
+
+.comment-expand-btn:hover {
+  text-decoration: underline;
+}
+
+.comment-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.comment-reply-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F07B3F;
+  cursor: pointer;
+}
+
+.comment-reply-trigger:hover {
+  text-decoration: underline;
+}
+
+.comment-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #FFFFFF;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.comment-like-btn img {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Кнопка "Посмотреть ответы(N)" */
+.toggle-replies-btn {
+  align-self: flex-start;
+  margin-left: 38px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F07B3F;
+  cursor: pointer;
+}
+
+.toggle-replies-btn:hover {
+  text-decoration: underline;
+}
+
+/* Кликабельные упоминания @никнейм внутри текста комментария */
+.comment-mention-link {
+  color: #F07B3F !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.comment-mention-link:hover {
+  text-decoration: underline;
+}
+
+/* Подложка для кнопок "Посмотреть ответы(N)" и "Скрыть ответы" */
+.view-replies-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #203040;
+  border: none;
+  border-radius: 14px;
+  padding: 6px 16px;
+  margin-left: 38px; /* Выравниваем по левой границе ветки ответов */
+  color: #F07B3F;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.view-replies-btn:hover {
+  background-color: #293d52;
+  color: #FFD460;
+}
+
+.comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+
+.comment-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.comment-reply-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Merriweather', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F07B3F;
+  cursor: pointer;
+}
+
+.comment-reply-btn:hover {
+  text-decoration: underline;
+}
+
+
+/* --- НИЖНЯЯ СТРОКА ВВОДА КОММЕНТАРИЯ --- */
+.comment-input-bar {
+  display: flex;
+  align-items: flex-end; /* Фиксация нижней границы при росте вверх до 3 строк */
+  gap: 12px;
+  background-color: #203040;
+  border-radius: 22px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Плашка "ответ x" — не растягивается по вертикали */
+.reply-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  align-self: flex-end;
+  background-color: #EA5455;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 14px;
+  padding: 0 12px;
+  font-family: 'Merriweather', serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.reply-badge-close {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.comment-textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Merriweather', serif;
+  font-size: 15px;
+  line-height: 22px; /* 3 строки = 66px max-height */
+  max-height: 66px;
+  overflow-y: auto;
+  color: #FFFFFF;
+  font-style: normal;
+  padding: 3px 0;
+  margin: 0;
+}
+
+.comment-textarea::placeholder {
+  color: #b0b0b0;
+  font-style: italic;
+  opacity: 1;
+}
+
+.comment-submit-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  height: 28px;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.comment-submit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.comment-submit-btn img {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  color: #F07B3F;
+}
+
 .max-cover-box { width: 440px; height: 440px; border-radius: 30px; overflow: hidden; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .max-cover-box img { width: 100%; height: 100%; object-fit: cover; }
 
-.max-info-box { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+.max-info-box {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
 .max-track-title { font-size: 36px; color: #FFD460; margin: 0 0 10px 0; font-weight: 700; }
 .max-track-artists { font-size: 22px; color: #F07B3F; margin-bottom: 35px; }
 
@@ -372,3 +852,98 @@ content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-5
   display: none;
 }
 
+/* Кнопка удаления комментария справа от лайков */
+.comment-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.comment-delete-btn:hover {
+  opacity: 0.8;
+}
+
+.comment-delete-btn img {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Модальное окно подтверждения удаления комментария */
+.au-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 24, 36, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.au-confirm-box {
+  width: 100%;
+  max-width: 520px;
+  background-color: #2D4059;
+  border-radius: 20px;
+  padding: 34px 38px;
+  box-sizing: border-box;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.au-confirm-title {
+  font-family: 'Merriweather', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #F07B3F;
+  margin: 0 0 16px 0;
+}
+
+.au-confirm-subtitle {
+  font-family: 'Merriweather', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFD460;
+  margin: 0 0 30px 0;
+}
+
+.au-confirm-buttons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.au-confirm-btn-yes,
+.au-confirm-btn-no {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Merriweather', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.au-confirm-btn-yes {
+  background-color: #EA5455;
+}
+
+.au-confirm-btn-no {
+  background-color: #203040;
+}
+
+.au-confirm-btn-yes:hover,
+.au-confirm-btn-no:hover {
+  opacity: 0.9;
+}

@@ -62,57 +62,121 @@
     <%= image_tag "close_panel_icon.png", class: "close-panel-arrow", alt: "Свернуть" %>
   </button>
 
-  <div class="max-player-layout">
-    <div class="max-cover-box">
-      <img src="" alt="" id="max-player-cover">
+    <div class="max-player-layout">
+    <!-- ЛЕВАЯ КОЛОНКА: ТОЛЬКО ОБЛОЖКА (пульт переносится сюда только при открытии комментариев) -->
+    <div class="max-left-column" id="max-left-column">
+      <div class="max-cover-box">
+        <img src="" alt="" id="max-player-cover">
+      </div>
     </div>
 
-    <div class="max-info-box">
-      <div class="max-title-marquee-box" id="max-title-marquee-box">
-        <div class="max-marquee-track" id="max-marquee-track">
-          <h2 class="max-track-title" id="max-player-title">Название</h2>
-          <span class="max-track-title marquee-clone" id="max-player-title-clone" aria-hidden="true"></span>
+    <!-- ПРАВАЯ КОЛОНКА: ПЕРЕКЛЮЧАЕТСЯ МЕЖДУ ТРЕКОМ И КОММЕНТАРИЯМИ -->
+    <div class="max-right-column">
+      
+      <!-- РЕЖИМ 1: ИНФОРМАЦИЯ О ТРЕКЕ -->
+      <div class="max-info-box" id="max-track-details-view">
+        <div class="max-title-marquee-box" id="max-title-marquee-box">
+          <div class="max-marquee-track" id="max-marquee-track">
+            <h2 class="max-track-title" id="max-player-title">Название</h2>
+            <span class="max-track-title marquee-clone" id="max-player-title-clone" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="max-track-artists" id="max-player-artists">Авторы</div>
+
+        <div class="max-actions-fixed-row">
+          <button type="button" class="carousel-item-btn like-stat js-player-like" id="max-like-btn">
+            <%= image_tag "like_icon.png" %> <span id="like-count-display">0</span>
+          </button>
+          <button type="button" class="carousel-item-btn dislike-stat js-player-dislike" id="max-dislike-btn">
+            <%= image_tag "dislike_icon.png" %>
+          </button>
+          <button type="button" class="carousel-item-btn comment-star" id="max-comment-btn">
+            <%= image_tag "comments_icon.png" %> <span id="comment-count-display">0</span>
+          </button>
+          <button type="button" class="carousel-item-btn options-stat" id="max-options-btn">
+            <%= image_tag "point3_icon.png", alt: "Опции" %>
+          </button>
+        </div>
+
+        <div class="max-timeline-wrapper">
+          <div class="max-progress-area" id="max-progress-timeline">
+            <div class="max-buffered-bar" id="max-player-buffered"></div>
+            <div class="max-progress-bar" id="max-progress-current"></div>
+          </div>
+          <div class="max-time-labels">
+            <span id="max-time-current">0:00</span>
+            <span id="max-time-duration">0:00</span>
+          </div>
+        </div>
+
+        <!-- Пульт по умолчанию находится в правой колонке по центру высоты обложки -->
+        <div class="max-controls-row" id="max-controls-row">
+          <button type="button" class="player-btn max-nav-btn js-player-prev"><%= image_tag "prev_track.png" %></button>
+          <button type="button" class="player-btn max-play-big" id="max-btn-play-toggle"><%= image_tag "play_icon.png" %></button>
+          <button type="button" class="player-btn max-nav-btn js-player-next"><%= image_tag "next_track.png" %></button>
         </div>
       </div>
 
-      <div class="max-track-artists" id="max-player-artists">Авторы</div>
+      <!-- РЕЖИМ 2: РАЗДЕЛ КОММЕНТАРИЕВ -->
+      <div class="max-comments-panel d-none" id="max-comments-view"
+           data-like-icon="<%= asset_path('like_icon.png') %>"
+           data-like-confirmed-icon="<%= asset_path('like_confirmed_icon.png') %>"
+           data-trash-icon="<%= asset_path('trashcan-icon.png') %>"
+           data-logged-in="<%= logged_in? %>">
+        
+        <div class="comments-header-bar">
+          <button type="button" class="comments-header-icon-btn" id="btn-close-comments" title="Назад к треку">
+            <%= image_tag "return_icon.png", alt: "Назад" %>
+          </button>
+          
+          <div class="comments-header-center">
+            <span class="comments-header-title">Комментарии</span>
+            <span class="comments-header-count" id="comments-panel-count">0</span>
+          </div>
 
-
-      <div class="max-actions-fixed-row">
-        <button type="button" class="carousel-item-btn like-stat js-player-like" id="max-like-btn">
-          <%= image_tag "like_icon.png" %> <span id="like-count-display">0</span>
-        </button>
-        <button type="button" class="carousel-item-btn dislike-stat js-player-dislike" id="max-dislike-btn">
-          <%= image_tag "dislike_icon.png" %>
-        </button>
-        <button type="button" class="carousel-item-btn comment-star" id="max-comment-btn">
-          <%= image_tag "comments_icon.png" %> <span id="comment-count-display">0</span>
-        </button>
-        <button type="button" class="carousel-item-btn options-stat" id="max-options-btn">
-          <%= image_tag "point3_icon.png", alt: "Опции" %>
-        </button>
-      </div>
-
-
-      <div class="max-timeline-wrapper">
-        <div class="max-progress-area" id="max-progress-timeline">
-          <div class="max-buffered-bar" id="max-player-buffered"></div>
-          <div class="max-progress-bar" id="max-progress-current"></div>
+          <button type="button" class="comments-header-icon-btn" id="btn-refresh-comments" title="Обновить комментарии">
+            <%= image_tag "update_comments_icon.png", alt: "Обновить" %>
+          </button>
         </div>
-        <div class="max-time-labels">
-          <span id="max-time-current">0:00</span>
-          <span id="max-time-duration">0:00</span>
+
+        <div class="comments-body-area">
+          <div class="comments-scroll-list" id="comments-list-container"></div>
+
+          <div class="comment-input-bar">
+            <button type="button" class="reply-badge-btn d-none" id="reply-mode-badge" title="Отменить ответ">
+              <span>ответ</span>
+              <span class="reply-badge-close">&times;</span>
+            </button>
+
+            <textarea id="comment-textarea"
+                      class="comment-textarea"
+                      rows="1"
+                      maxlength="5000"
+                      placeholder="<%= logged_in? ? 'Написать комментарий...' : 'Войдите, чтобы оставить комментарий...' %>"
+                      <%= 'disabled' unless logged_in? %>></textarea>
+
+            <button type="button" class="comment-submit-btn" id="btn-submit-comment" disabled title="Отправить">
+              <%= image_tag "submit_comment_icon.png", alt: "Отправить" %>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- И в нижнем пульте (.max-controls-row) -->
-      <div class="max-controls-row">
-        <button type="button" class="player-btn max-nav-btn js-player-prev"><%= image_tag "prev_track.png" %></button>
-        <button type="button" class="player-btn max-play-big" id="max-btn-play-toggle"><%= image_tag "play_icon.png" %></button>
-        <button type="button" class="player-btn max-nav-btn js-player-next"><%= image_tag "next_track.png" %></button>
-      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Модальное окно подтверждения удаления комментария -->
+<div class="au-confirm-overlay d-none" id="comment-delete-modal" data-turbo-permanent>
+  <div class="au-confirm-box">
+    <h3 class="au-confirm-title">Удалить комментарий?</h3>
+    <p class="au-confirm-subtitle" id="comment-delete-subtitle">Отменить действие будет невозможно.</p>
+    <div class="au-confirm-buttons">
+      <button type="button" class="au-confirm-btn-yes" id="btn-confirm-delete-comment">Да, удалить</button>
+      <button type="button" class="au-confirm-btn-no" id="btn-cancel-delete-comment">Не удалять</button>
     </div>
   </div>
 </div>
-
 

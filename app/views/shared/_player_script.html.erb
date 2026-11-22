@@ -56,6 +56,8 @@
     const playImg = document.getElementById("img-play-state");
     const maxBtn = document.getElementById("max-btn-play-toggle");
     const maxPlayBig = maxBtn ? maxBtn.querySelector("img") : null;
+    const sideCommentsBtn = document.getElementById("max-comments-play-toggle");
+    const sidePlayImg = sideCommentsBtn ? sideCommentsBtn.querySelector("img") : null;
 
     const minPlay = minPlayerContainer.getAttribute("data-img-min-play");
     const minPause = minPlayerContainer.getAttribute("data-img-min-pause");
@@ -64,10 +66,15 @@
 
     if (playImg) playImg.src = isPlaying ? minPause : minPlay;
     if (maxPlayBig) maxPlayBig.src = isPlaying ? maxPause : maxPlay;
+    if (sidePlayImg) sidePlayImg.src = isPlaying ? maxPause : maxPlay;
   }
+
 
   // 1. ОБНОВЛЕННЫЙ СТАРТ ТРЕКА (сохраняет все данные трека в state)
   window.startAudioPlayback = function(trackData, playlistArray = []) {
+
+    closeCommentsPanel();
+
     state.hasActiveTrack = true;
     state.currentTrack = trackData;
     const audio = document.getElementById("audio-core");
@@ -94,8 +101,21 @@
     renderPlayerArtists(trackData);
     setupMaxTitleMarquee();
 
-    const maxLikeCount = document.getElementById("like-count-display");
+        const maxLikeCount = document.getElementById("like-count-display");
     if (maxLikeCount) maxLikeCount.innerText = trackData.likes_count;
+
+    // Сбрасываем старый счётчик комментариев и подгружаем актуальный для текущего трека
+    const mainCommentCount = document.getElementById("comment-count-display");
+    if (mainCommentCount) mainCommentCount.innerText = "0";
+    fetch(`/tracks/${trackData.id}/comments`)
+      .then(res => res.json())
+      .then(data => {
+        if (mainCommentCount && state.playlist[state.currentIndex]?.id === trackData.id) {
+          mainCommentCount.innerText = data.total_count_formatted ?? data.total_count ?? 0;
+        }
+      })
+      .catch(() => {});
+
 
     updateReactionIcons(trackData.user_reaction);
 
@@ -201,13 +221,14 @@
       const audio = document.getElementById("audio-core");
 
       // 1. Play / Pause
-      if (e.target.closest("#btn-play-toggle") || e.target.closest("#max-btn-play-toggle")) {
+      if (e.target.closest("#btn-play-toggle") || e.target.closest("#max-btn-play-toggle") || e.target.closest("#max-comments-play-toggle")) {
         e.preventDefault();
         if (!audio || !audio.src) return;
         if (audio.paused) audio.play().catch(err => console.error(err));
         else audio.pause();
         return;
       }
+
 
       // 2. Следующий / Предыдущий трек
       if (e.target.closest(".js-player-next")) {
@@ -302,12 +323,13 @@
           id: parseInt(c.getAttribute("data-id")),
           title: c.getAttribute("data-title"),
           artists: c.getAttribute("data-artists"),
-          artists_json: card.getAttribute("data-artists-json"),
+          artists_json: c.getAttribute("data-artists-json"),
           audio_url: c.getAttribute("data-audio-url"),
           cover_url: c.getAttribute("data-cover-url"),
           likes_count: parseInt(c.getAttribute("data-likes-count")) || 0,
           user_reaction: c.getAttribute("data-user-reaction")
         })).filter(t => t.audio_url && t.id !== clickedTrackData.id);
+
 
         otherTracks = otherTracks.filter((track, index, self) =>
           index === self.findIndex((t) => t.id === track.id)
@@ -320,14 +342,87 @@
           otherTracks[j] = temp;
         }
 
-
-window.startAudioPlayback(clickedTrackData, [clickedTrackData, ...otherTracks]);
-
-
-      
+        window.startAudioPlayback(clickedTrackData, [clickedTrackData, ...otherTracks]);
       }
+
+            // Открыть / закрыть / обновить комментарии
+      if (e.target.closest("#max-comment-btn")) {
+        e.preventDefault();
+        openCommentsPanel();
+        return;
+      }
+      if (e.target.closest("#btn-close-comments")) {
+        e.preventDefault();
+        closeCommentsPanel();
+        return;
+      }
+      if (e.target.closest("#btn-refresh-comments")) {
+        e.preventDefault();
+        loadTrackComments();
+        return;
+      }
+
+      // Сброс режима ответа ("ответ x")
+      if (e.target.closest("#reply-mode-badge")) {
+        e.preventDefault();
+        replyingToCommentId = null;
+        const badge = document.getElementById("reply-mode-badge");
+        if (badge) badge.classList.add("d-none");
+        return;
+      }
+
+      // Отправка нового комментария или ответа
+      if (e.target.closest("#btn-submit-comment")) {
+        e.preventDefault();
+        submitNewComment();
+        return;
+      }
+
+            // Отмена удаления комментария ("Не удалять")
+      if (e.target.closest("#btn-cancel-delete-comment")) {
+        e.preventDefault();
+        pendingDeleteCommentId = null;
+        const modal = document.getElementById("comment-delete-modal");
+        if (modal) modal.classList.add("d-none");
+        return;
+      }
+
+      // Подтверждение удаления комментария ("Да, удалить")
+      if (e.target.closest("#btn-confirm-delete-comment")) {
+        e.preventDefault();
+        if (!pendingDeleteCommentId) return;
+        const commentIdToDelete = pendingDeleteCommentId;
+        pendingDeleteCommentId = null;
+
+        const modal = document.getElementById("comment-delete-modal");
+        if (modal) modal.classList.add("d-none");
+
+        fetch(`/comments/${commentIdToDelete}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+          }
+        })
+        .then(res => {
+          if (res.ok) loadTrackComments();
+        })
+        .catch(err => console.error("Ошибка удаления комментария:", err));
+        return;
+      }
+
+
+
+
+
+
     });
-  }
+}
+
+
+
+
+
 
 // --- ПРИВЯЗКА НАТИВНЫХ СОБЫТИЙ К ТЕГУ  ---
 function bindAudioEvents() {
@@ -520,5 +615,340 @@ if (maxBuf) maxBuf.style.width = bufferedPct + "%";
 
 
 
+  // --- ЛОГИКА РАЗДЕЛА КОММЕНТАРИЕВ В РАЗВЕРНУТОМ ПЛЕЕРЕ ---
+     // --- ЕДИНЫЙ МОДУЛЬ РАЗДЕЛА КОММЕНТАРИЕВ ---
+  let replyingToCommentId = null;
+  let pendingDeleteCommentId = null;
+
+  function openCommentsPanel() {
+    const infoBox = document.getElementById("max-track-details-view");
+    const commentsPanel = document.getElementById("max-comments-view");
+    const leftCol = document.getElementById("max-left-column");
+    const controlsRow = document.getElementById("max-controls-row");
+
+    if (leftCol && controlsRow) {
+      leftCol.appendChild(controlsRow);
+    }
+
+    if (infoBox) {
+      infoBox.classList.add("d-none");
+      infoBox.style.setProperty("display", "none", "important");
+    }
+    if (commentsPanel) {
+      commentsPanel.classList.remove("d-none");
+      commentsPanel.style.setProperty("display", "flex", "important");
+    }
+
+    resetCommentInput();
+    loadTrackComments();
+  }
+
+  function closeCommentsPanel() {
+    const infoBox = document.getElementById("max-track-details-view");
+    const commentsPanel = document.getElementById("max-comments-view");
+    const controlsRow = document.getElementById("max-controls-row");
+
+    if (infoBox && controlsRow) {
+      infoBox.appendChild(controlsRow);
+    }
+
+    if (commentsPanel) {
+      commentsPanel.classList.add("d-none");
+      commentsPanel.style.setProperty("display", "none", "important");
+    }
+    if (infoBox) {
+      infoBox.classList.remove("d-none");
+      infoBox.style.removeProperty("display");
+    }
+  }
+
+  function resetCommentInput() {
+    replyingToCommentId = null;
+    const badge = document.getElementById("reply-mode-badge");
+    const textarea = document.getElementById("comment-textarea");
+    const submitBtn = document.getElementById("btn-submit-comment");
+
+    if (badge) badge.classList.add("d-none");
+    if (textarea) {
+      textarea.value = "";
+      textarea.style.height = "22px";
+    }
+    if (submitBtn) submitBtn.disabled = true;
+  }
+
+  function renderCommentBodyWithMentions(containerEl, rawText) {
+    containerEl.innerHTML = "";
+    const mentionRegex = /(@[a-zA-Z0-9_.-]+)/g;
+    const parts = rawText.split(mentionRegex);
+
+    parts.forEach(part => {
+      if (part.startsWith("@") && part.length > 1) {
+        const username = part.slice(1).toLowerCase();
+        const link = document.createElement("a");
+        link.href = `/user/${encodeURIComponent(username)}`;
+        link.className = "comment-mention-link artist-profile-link";
+        link.textContent = part;
+        containerEl.appendChild(link);
+      } else {
+        containerEl.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  function loadTrackComments() {
+    const track = state.playlist[state.currentIndex];
+    const listContainer = document.getElementById("comments-list-container");
+    if (!track || !listContainer) return;
+
+    listContainer.innerHTML = `<div style="color:#8aa0b5; text-align:center; padding:20px;">Загрузка комментариев...</div>`;
+
+    fetch(`/tracks/${track.id}/comments`)
+      .then(res => res.json())
+      .then(data => {
+        const countValue = data.total_count_formatted ?? data.total_count ?? 0;
+        const headerTotal = document.getElementById("comments-panel-count");
+        const mainCounter = document.getElementById("comment-count-display");
+
+        if (headerTotal) headerTotal.innerText = countValue;
+        if (mainCounter) mainCounter.innerText = countValue;
+
+        listContainer.innerHTML = "";
+        const comments = data.comments || [];
+
+        if (comments.length === 0) {
+          listContainer.innerHTML = `<div style="color:#8aa0b5; text-align:center; padding:30px;">Комментариев пока нет. Будьте первым!</div>`;
+          return;
+        }
+
+        comments.forEach(comment => {
+          listContainer.appendChild(buildCommentThreadElement(comment));
+        });
+      })
+      .catch(err => console.error("Ошибка загрузки комментариев:", err));
+  }
+
+  function buildCommentCardElement(comment, isReply, rootCommentId) {
+    const commentsView = document.getElementById("max-comments-view");
+    const minPlayer = document.getElementById("au-player-minimized-container");
+    const likeIcon = commentsView?.getAttribute("data-like-icon") || minPlayer?.getAttribute("data-img-like");
+    const likeConfirmedIcon = commentsView?.getAttribute("data-like-confirmed-icon") || minPlayer?.getAttribute("data-img-like-confirmed");
+    
+    const trashIcon = commentsView?.getAttribute("data-trash-icon") || "";
+    const deleteBtnHtml = comment.can_delete
+      ? `<button type="button" class="comment-delete-btn" title="Удалить комментарий"><img src="${trashIcon}" alt="Удалить"></button>`
+      : "";
+
+
+    const isLiked = Boolean(comment.liked_by_me || comment.liked);
+
+    const card = document.createElement("div");
+    card.className = "comment-item-card" + (isReply ? " is-reply" : "");
+    card.dataset.commentId = comment.id;
+
+    const avatarHtml = comment.avatar_url
+      ? `<img src="${comment.avatar_url}" alt="" class="comment-avatar">`
+      : `<div class="comment-avatar"></div>`;
+
+    card.innerHTML = `
+      ${avatarHtml}
+      <div class="comment-content-col">
+        <div class="comment-meta-row">
+          <a href="/user/${encodeURIComponent(comment.username)}" class="comment-author-link artist-profile-link">${escapeHtml(comment.username)}</a>
+          <span class="comment-time-txt">${escapeHtml(comment.time_ago)}</span>
+        </div>
+        <div class="comment-body-wrapper">
+          <div class="comment-body-text"></div>
+        </div>
+        <div class="comment-actions-row">
+          <button type="button" class="comment-reply-btn">Ответить</button>
+          <button type="button" class="comment-like-btn">
+            <img src="${isLiked ? likeConfirmedIcon : likeIcon}" alt="Like">
+            <span class="comment-like-count">${comment.formatted_likes ?? comment.likes_count ?? 0}</span>
+          </button>
+          ${deleteBtnHtml}
+        </div>
+      </div>
+    `;
+
+    const bodyEl = card.querySelector(".comment-body-text");
+    renderCommentBodyWithMentions(bodyEl, comment.body);
+
+    requestAnimationFrame(() => {
+      const lineHeight = parseFloat(window.getComputedStyle(bodyEl).lineHeight) || 21;
+      if (bodyEl.scrollHeight > lineHeight * 3 + 4) {
+        bodyEl.classList.add("clamped");
+        const expandBtn = document.createElement("button");
+        expandBtn.type = "button";
+        expandBtn.className = "comment-expand-btn";
+        expandBtn.innerText = "раскрыть";
+        expandBtn.addEventListener("click", () => {
+          bodyEl.classList.remove("clamped");
+          expandBtn.remove();
+        });
+        card.querySelector(".comment-body-wrapper").appendChild(expandBtn);
+      }
+    });
+
+    card.querySelector(".comment-reply-btn").addEventListener("click", () => {
+      const textarea = document.getElementById("comment-textarea");
+      const badge = document.getElementById("reply-mode-badge");
+      if (!textarea || textarea.disabled) return;
+
+      replyingToCommentId = rootCommentId;
+      if (badge) badge.classList.remove("d-none");
+
+      const mention = `@${comment.username} `;
+      if (!textarea.value.startsWith(mention)) {
+        textarea.value = mention + textarea.value;
+      }
+      textarea.focus();
+      autoResizeCommentTextarea(textarea);
+    });
+
+    const likeBtn = card.querySelector(".comment-like-btn");
+    likeBtn.addEventListener("click", () => {
+      fetch(`/comments/${comment.id}/toggle_like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+        }
+      })
+      .then(res => {
+        if (res.status === 401) { alert("Войдите в аккаунт, чтобы оценивать комментарии."); return null; }
+        return res.json();
+      })
+      .then(data => {
+        if (!data) return;
+        likeBtn.querySelector("img").src = data.liked ? likeConfirmedIcon : likeIcon;
+        likeBtn.querySelector(".comment-like-count").innerText = data.formatted_likes ?? data.likes_count;
+      });
+    });
+
+
+        const deleteBtn = card.querySelector(".comment-delete-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => {
+        pendingDeleteCommentId = comment.id;
+        const subtitleEl = document.getElementById("comment-delete-subtitle");
+        if (subtitleEl) {
+          subtitleEl.innerText = !isReply
+            ? "Также будут удалены все ответы на него. Отменить действие будет невозможно."
+            : "Отменить действие будет невозможно.";
+        }
+        const modal = document.getElementById("comment-delete-modal");
+        if (modal) modal.classList.remove("d-none");
+      });
+    }
+
+
+
+    return card;
+  }
+
+  function buildCommentThreadElement(comment) {
+    const thread = document.createElement("div");
+    thread.className = "comment-thread";
+    thread.dataset.rootId = comment.id;
+
+    thread.appendChild(buildCommentCardElement(comment, false, comment.id));
+
+    const repliesContainer = document.createElement("div");
+    repliesContainer.className = "comment-replies-list d-none";
+    thread.appendChild(repliesContainer);
+
+    const replies = comment.replies || [];
+    if (replies.length > 0) {
+      let isExpanded = false;
+      const toggleRepliesBtn = document.createElement("button");
+      toggleRepliesBtn.type = "button";
+      toggleRepliesBtn.className = "view-replies-btn";
+      toggleRepliesBtn.innerText = `Посмотреть ответы(${replies.length})`;
+
+      toggleRepliesBtn.addEventListener("click", () => {
+        if (!isExpanded) {
+          repliesContainer.innerHTML = "";
+          replies.forEach(reply => {
+            repliesContainer.appendChild(buildCommentCardElement(reply, true, comment.id));
+          });
+          repliesContainer.classList.remove("d-none");
+          toggleRepliesBtn.innerText = "Скрыть ответы";
+          thread.appendChild(toggleRepliesBtn);
+          isExpanded = true;
+        } else {
+          repliesContainer.classList.add("d-none");
+          repliesContainer.innerHTML = "";
+          toggleRepliesBtn.innerText = `Посмотреть ответы(${replies.length})`;
+          isExpanded = false;
+        }
+      });
+
+      thread.appendChild(toggleRepliesBtn);
+    }
+
+    return thread;
+  }
+
+  function autoResizeCommentTextarea(textarea) {
+    textarea.style.height = "22px";
+    const newHeight = Math.min(textarea.scrollHeight, 66);
+    textarea.style.height = newHeight + "px";
+
+    const submitBtn = document.getElementById("btn-submit-comment");
+    if (submitBtn) {
+      submitBtn.disabled = textarea.value.trim().length === 0;
+    }
+  }
+
+  function submitNewComment() {
+    const track = state.playlist[state.currentIndex];
+    const textarea = document.getElementById("comment-textarea");
+    const submitBtn = document.getElementById("btn-submit-comment");
+    if (!track || !textarea || textarea.value.trim().length === 0) return;
+
+    submitBtn.disabled = true;
+
+    fetch(`/tracks/${track.id}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+      body: JSON.stringify({
+        body: textarea.value.trim(),
+        parent_id: replyingToCommentId
+      })
+    })
+.then(res => res.json())
+.then(data => {
+if (data.errors) {
+alert(data.errors.join("\n"));
+submitBtn.disabled = false;
+return;
+}
+resetCommentInput();
+loadTrackComments();
+})
+.catch(err => {
+console.error(err);
+submitBtn.disabled = false;
+});
+}
+function escapeHtml(str) {
+const div = document.createElement("div");
+div.textContent = str;
+return div.innerHTML;
+}
+document.addEventListener("input", (e) => {
+if (e.target && e.target.id === "comment-textarea") {
+autoResizeCommentTextarea(e.target);
+}
+});
+document.addEventListener("keydown", (e) => {
+if (e.target && e.target.id === "comment-textarea" && e.key === "Enter" && !e.shiftKey) {
+e.preventDefault();
+submitNewComment();
+}
+});
 })();
 </script>
