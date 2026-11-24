@@ -16,7 +16,7 @@ Rails.application.routes.draw do
   post "/signin", to: "sessions#create" # Маршрут для обработки отправки формы
   post "/login", to: "sessions#login", as: "login" # для входа (авторизации)
   delete "/logout", to: "sessions#destroy", as: "logout" # Новый маршрут
-  resources :tracks, only: [:new, :create]
+  
 
   # НОВЫЙ МАРШРУТ: живой поиск пользователей
   get "/users/search", to: "sessions#search_users", as: "search_users"
@@ -24,10 +24,14 @@ Rails.application.routes.draw do
   get "/user/:username", to: "users#show", as: "user_profile"
   post "/user/:username/subscribe", to: "subscriptions#toggle", as: "toggle_subscription"
 
+  get "/tracks/:id/stats", to: "tracks#stats"
   resources :tracks, only: [:new, :create, :show] do
+    get :stats, on: :member
     post "reactions/toggle", to: "reactions#toggle"
     resources :comments, only: [:index, :create]
   end
+
+
   #post "/comments/:id/like", to: "comments#toggle_like", as: "toggle_comment_like"
   resources :comments, only: [:destroy]
   post "/comments/:id/toggle_like", to: "comments#toggle_like", as: "toggle_comment_like"

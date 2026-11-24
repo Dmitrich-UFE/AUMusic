@@ -101,23 +101,42 @@
     renderPlayerArtists(trackData);
     setupMaxTitleMarquee();
 
-        const maxLikeCount = document.getElementById("like-count-display");
-    if (maxLikeCount) maxLikeCount.innerText = trackData.likes_count;
-
-    // Сбрасываем старый счётчик комментариев и подгружаем актуальный для текущего трека
+    const maxLikeCount = document.getElementById("like-count-display");
     const mainCommentCount = document.getElementById("comment-count-display");
+
+    if (maxLikeCount) maxLikeCount.innerText = trackData.likes_count;
     if (mainCommentCount) mainCommentCount.innerText = "0";
+    updateReactionIcons(trackData.user_reaction);
+
+    // 1. Сразу подгружаем количество комментариев из уже работающего эндпоинта комментариев
     fetch(`/tracks/${trackData.id}/comments`)
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (mainCommentCount && state.playlist[state.currentIndex]?.id === trackData.id) {
+        if (!data || state.playlist[state.currentIndex]?.id !== trackData.id) return;
+        if (mainCommentCount) {
           mainCommentCount.innerText = data.total_count_formatted ?? data.total_count ?? 0;
         }
       })
       .catch(() => {});
 
+    // 2. Запрашиваем свежие лайки и реакцию текущего пользователя с сервера
+    fetch(`/tracks/${trackData.id}/stats`)
+      .then(res => res.ok ? res.json() : null)
+      .then(stats => {
+        if (!stats || state.playlist[state.currentIndex]?.id !== trackData.id) return;
 
-    updateReactionIcons(trackData.user_reaction);
+        trackData.likes_count = stats.likes_count;
+        trackData.user_reaction = stats.user_reaction;
+
+        if (maxLikeCount) maxLikeCount.innerText = stats.likes_count;
+        updateReactionIcons(stats.user_reaction);
+
+        document.querySelectorAll(`.playable-track-card[data-id="${trackData.id}"]`).forEach(card => {
+          card.setAttribute("data-likes-count", stats.likes_count);
+          card.setAttribute("data-user-reaction", stats.user_reaction || "");
+        });
+      })
+      .catch(() => {});
 
     if (state.reactionSubscription) state.reactionSubscription.unsubscribe();
 
@@ -131,6 +150,9 @@
           if (state.playlist[state.currentIndex]) {
             state.playlist[state.currentIndex].likes_count = data.likes_count;
           }
+          document.querySelectorAll(`.playable-track-card[data-id="${trackData.id}"]`).forEach(card => {
+            card.setAttribute("data-likes-count", data.likes_count);
+          });
         }
       });
     }
@@ -716,7 +738,7 @@ if (maxBuf) maxBuf.style.width = bufferedPct + "%";
         const comments = data.comments || [];
 
         if (comments.length === 0) {
-          listContainer.innerHTML = `<div style="color:#8aa0b5; text-align:center; padding:30px;">Комментариев пока нет. Будьте первым!</div>`;
+          listContainer.innerHTML = `<div style="color:#8aa0b5; text-align:center; padding:30px;">Комментариев пока нет. Будьте первыми!</div>`;
           return;
         }
 

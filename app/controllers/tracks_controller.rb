@@ -1,13 +1,17 @@
 class TracksController < ApplicationController
-  before_action :require_login
-  before_action :require_musician_or_owner
+  #before_action :require_login
+  #before_action :require_musician_or_owner
+
+  before_action :require_login, except: [:show, :stats]
+  before_action :require_musician_or_owner, except: [:show, :stats]
+
 
   def new
     @track = Track.new
   end
 
 
-      def create
+  def create
     coauthor_names = track_params[:coauthors] || []
     clean_params = track_params.except(:coauthors)
 
@@ -34,6 +38,23 @@ class TracksController < ApplicationController
     end
   end
 
+  def stats
+    track = Track.find(params[:id])
+    return head :forbidden unless track.accessible_by?(current_user)
+
+    render json: {
+      likes_count: track.likes_count,
+      comments_count: track.comments.count,
+      user_reaction: logged_in? ? current_user.reactions.find_by(track: track)&.kind : nil
+    }
+  end
+
+  def show
+    @track = Track.find(params[:id])
+    unless @track.accessible_by?(current_user)
+    redirect_to root_path, alert: "Этот трек является приватным."
+  end
+
   private
 
   def track_params
@@ -53,11 +74,6 @@ class TracksController < ApplicationController
     end
   end
 
-  def show
-  @track = Track.find(params[:id])
-  unless @track.accessible_by?(current_user)
-    redirect_to root_path, alert: "Этот трек является приватным."
-  end
 end
 
   

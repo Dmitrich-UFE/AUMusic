@@ -20,8 +20,14 @@ class ReactionsController < ApplicationController
       current_kind = params[:kind]
     end
 
-    # Возвращаем текущий статус реакции пользователя для мгновенной локальной подмены
-    render json: { user_reaction: current_kind }
+    
+    likes_count = track.likes_count
+    ActionCable.server.broadcast("track_reactions_#{track.id}", { likes_count: likes_count })
+
+    render json: {
+      user_reaction: current_user.reactions.find_by(track: track)&.kind,
+      likes_count: likes_count
+    }
   end
 
 
